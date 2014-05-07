@@ -1,18 +1,93 @@
-# Object files
+*.nupkg
+
+# Compiled Object files
+*.slo
+*.lo
 *.o
-*.ko
+*.obj
+ipch/**
 
-# Libraries
-*.lib
-*.a
+# Nuget packages folder
+/packages/**
 
-# Shared objects (inc. Windows DLLs)
+
+# Compiled source #
+###################
+*.com
+*.class
 *.dll
-*.so
-*.so.*
+*.exe
 *.dylib
 
-# Executables
-*.exe
-*.out
-*.app
+#don't ignore stuff in nuget folder.
+!/.nuget/**/*.*
+
+docs/**/*.html
+## Except in libriaries
+*.so
+*.so.*
+*.o
+*.so.dSYM
+*.suo
+*.user
+*.opensdf
+*.sdf
+*.aps
+dlldata.c
+TrmsSmpteTc_i.[ch]
+TrmsSmpteTc_p.[ch]
+
+# Directories - even in libraries
+######################
+*Release/
+*Debug/
+!mobdebug/
+x64/
+Win32/
+_build/
+_install/
+# This is the package build directory.
+/_*_build/**/*
+
+##next the regular ignoring
+
+###editor userspace stuff
+*.sublime-workspace
+*.user
+*.tmp
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+
+# Leave .bootstrap alone! we need unix2dos.exe
+#!/src/.boostrap/**/*.com
+#!/src/.boostrap/**/*.class
+#!/src/.boostrap/**/*.dll
+#!/src/.boostrap/**/*.exe
+#!/src/.boostrap/**/*.dylib
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
