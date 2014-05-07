@@ -5,6 +5,10 @@
 *.lo
 *.o
 *.obj
+*.ilk
+*.pdb
+
+# Compiled headers.
 ipch/**
 
 # Nuget packages folder
