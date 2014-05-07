@@ -1,7 +1,7 @@
 /*LuaDumper*/
+#include <lua.hpp>
 #include <lauxlib.h>
 #include <lualib.h>
-#include <lua.h>
 #include <string.h>
 #include <stdio.h>
 int dump_stack (lua_State *L, const char * msg) {

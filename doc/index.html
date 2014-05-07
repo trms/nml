@@ -1,0 +1,682 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>nml documentation</title>
+    <link rel="stylesheet" href="ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>nml</h1>
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Class_nml">Class nml </a></li>
+<li><a href="#Class_socket">Class socket </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><strong>nml</strong></li>
+</ul>
+<h2>Topics</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="topics/socket_properties.md.html">socket_properties</a></li>
+  <li><a href="topics/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>nml</code></h1>
+<p>nml
+NanoMSG library for lua</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Class_nml">Class nml </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#nml:new">nml:new (protocol[, is_raw=false])</a></td>
+	<td class="summary">Creates a new nml socket object</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#nml:terminate">nml:terminate ()</a></td>
+	<td class="summary">Terminates the nml library, forcing all sockets to close.</td>
+	</tr>
+</table>
+<h2><a href="#Class_socket">Class socket </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#socket.domain">socket.domain</a></td>
+	<td class="summary">The socket domain (raw or full socket) (read only)</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket.protocol">socket.protocol</a></td>
+	<td class="summary">The protocol that the socket was created with.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket.linger">socket.linger</a></td>
+	<td class="summary">The time that a socket tries to send pending outbound messages after close has been called, in milliseconds.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket.send_buffer">socket.send_buffer</a></td>
+	<td class="summary">Size of the send buffer, in bytes.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket.receive_buffer">socket.receive_buffer</a></td>
+	<td class="summary">Size of the receive buffer, in bytes.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket.send_timeout">socket.send_timeout</a></td>
+	<td class="summary">The timeout for send operation on the socket, in milliseconds.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket.receive_timeout">socket.receive_timeout</a></td>
+	<td class="summary">The timeout for receive operation on the socket, in milliseconds.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket.reconnect_interval">socket.reconnect_interval</a></td>
+	<td class="summary">For connection-based transports such as TCP, this option specifies how long to wait, in milliseconds, when connection is broken before trying to re-establish it.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket.reconnect_interval_max">socket.reconnect_interval_max</a></td>
+	<td class="summary">This option is to be used only in addition to the <a href="index.html#socket.reconnect_interval">reconnect_interval</a> option.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket.send_priority">socket.send_priority</a></td>
+	<td class="summary">This is outbound priority of the socket.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket.ipv_4_only">socket.ipv_4_only</a></td>
+	<td class="summary">If set to <code>true</code>, only IPv4 addresses are used.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket:bind">socket:bind (self, address)</a></td>
+	<td class="summary">Binds a socet to a local transport</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket:connect">socket:connect (self, address)</a></td>
+	<td class="summary">Connects a socket to a remote endpoint.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket:send">socket:send (self, message[, non_blocking=false])</a></td>
+	<td class="summary">Sends a message to connected end points.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket:receive">socket:receive (self[, non_blocking=false])</a></td>
+	<td class="summary">Receives a message to connected end points.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket:shutdown">socket:shutdown (self, end_point)</a></td>
+	<td class="summary">Shuts down a socket's endpoint.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#socket:close">socket:close (self)</a></td>
+	<td class="summary">Closes a socket.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Class_nml"></a>Class nml </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "nml:new"></a>
+    <strong>nml:new (protocol[, is_raw=false])</strong>
+    </dt>
+    <dd>
+    Creates a new nml socket object
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">protocol</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+
+<pre><code>The name of the socket's protocol
+</code></pre>
+
+        </li>
+        <li><span class="parameter">is_raw</span>
+
+<pre><code>    If true, the protocol is a raw socket
+</code></pre>
+
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        nml<em>proto</em>socket                The new socket.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "nml:terminate"></a>
+    <strong>nml:terminate ()</strong>
+    </dt>
+    <dd>
+    Terminates the nml library, forcing all sockets to close.
+
+
+
+
+
+
+</dd>
+</dl>
+    <h2><a name="Class_socket"></a>Class socket </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "socket.domain"></a>
+    <strong>socket.domain</strong>
+    </dt>
+    <dd>
+    The socket domain (raw or full socket) (read only)
+
+    <ul>
+        <li><span class="parameter">domain</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket.protocol"></a>
+    <strong>socket.protocol</strong>
+    </dt>
+    <dd>
+    The protocol that the socket was created with.  (read only)
+
+    <ul>
+        <li><span class="parameter">protocol</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket.linger"></a>
+    <strong>socket.linger</strong>
+    </dt>
+    <dd>
+    The time that a socket tries to send pending outbound messages after close has been called, in milliseconds.  A false value (<code>false</code> or <code>nil</code>) means infinite linger.
+Default value is <code>1000</code> (1 second).
+
+    <ul>
+        <li><span class="parameter">linger</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket.send_buffer"></a>
+    <strong>socket.send_buffer</strong>
+    </dt>
+    <dd>
+    Size of the send buffer, in bytes.  To prevent blocking for messages larger than the buffer, exactly one message may be buffered in addition to the data in the send buffer. Default value is 128kB.
+
+    <ul>
+        <li><span class="parameter">send_buffer</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket.receive_buffer"></a>
+    <strong>socket.receive_buffer</strong>
+    </dt>
+    <dd>
+    Size of the receive buffer, in bytes.  To prevent blocking for messages larger than the buffer, exactly one message may be buffered in addition to the data in the receive buffer. Default value is 128kB.
+
+    <ul>
+        <li><span class="parameter">receive_buffer</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket.send_timeout"></a>
+    <strong>socket.send_timeout</strong>
+    </dt>
+    <dd>
+    The timeout for send operation on the socket, in milliseconds.  If message cannot be sent within the specified timeout, <code>nil</code> plus a timeout message is returned. False (<code>false</code>, but NOT <code>nil</code>) means infinite timeout (block forever). Default is false.
+
+    <ul>
+        <li><span class="parameter">send_timeout</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket.receive_timeout"></a>
+    <strong>socket.receive_timeout</strong>
+    </dt>
+    <dd>
+    The timeout for receive operation on the socket, in milliseconds.  If no messages are waiting, then <code>false</code> is returned. False (<code>false</code>, but NOT <code>nil</code>) means infinite timeout (block forever). Default is false
+
+    <ul>
+        <li><span class="parameter">receive_timeout</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket.reconnect_interval"></a>
+    <strong>socket.reconnect_interval</strong>
+    </dt>
+    <dd>
+    For connection-based transports such as TCP, this option specifies how long to wait, in milliseconds, when connection is broken before trying to re-establish it.  Note that actual reconnect interval may be randomised to some extent to prevent severe reconnection storms. Default value is <code>100</code> (0.1 second).
+
+    <ul>
+        <li><span class="parameter">reconnect_interval</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket.reconnect_interval_max"></a>
+    <strong>socket.reconnect_interval_max</strong>
+    </dt>
+    <dd>
+    This option is to be used only in addition to the <a href="index.html#socket.reconnect_interval">reconnect_interval</a> option.  It specifies maximum reconnection interval. On each reconnect attempt, the previous interval is doubled until <code>reconnect_interval_max</code> is reached. Value of <code>false</code> means that no exponential backoff is performed and reconnect interval is based only on <a href="index.html#socket.reconnect_interval">reconnect_interval</a>. If <code>reconnect_interval_max</code> is less than <a href="index.html#socket.reconnect_interval">reconnect_interval</a>, it is ignored. Default value is <code>false</code>.
+
+    <ul>
+        <li><span class="parameter">reconnect_interval_max</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket.send_priority"></a>
+    <strong>socket.send_priority</strong>
+    </dt>
+    <dd>
+    This is outbound priority of the socket.  This option has no effect on socket types that send messages to all the peers. However, if the socket type sends each message to a single peer (or a limited set of peers), peers with high priority take precedence over peers with low priority. Highest priority is 1, lowest priority is 16. Default value is 8.
+
+    <ul>
+        <li><span class="parameter">send_priority</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket.ipv_4_only"></a>
+    <strong>socket.ipv_4_only</strong>
+    </dt>
+    <dd>
+    If set to <code>true</code>, only IPv4 addresses are used.  If set to <code>false</code>, both IPv4 and IPv6 addresses are used. Default value is <code>true</code>.
+
+    <ul>
+        <li><span class="parameter">ipv_4_only</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket:bind"></a>
+    <strong>socket:bind (self, address)</strong>
+    </dt>
+    <dd>
+    Binds a socet to a local transport
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">address</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+
+<pre><code>The address that the socket will bind to.
+</code></pre>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+        Returns self
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket:connect"></a>
+    <strong>socket:connect (self, address)</strong>
+    </dt>
+    <dd>
+    Connects a socket to a remote endpoint.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">address</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+
+<pre><code>The address that the socket will bind to.
+</code></pre>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+        Returns self
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket:send"></a>
+    <strong>socket:send (self, message[, non_blocking=false])</strong>
+    </dt>
+    <dd>
+    Sends a message to connected end points.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">message</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+
+<pre><code>The message to send.
+</code></pre>
+
+        </li>
+        <li><span class="parameter">non_blocking</span>
+         If true, this call will not block, even if the message cannot be sent. In this case, an error is sent
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+        Returns self
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket:receive"></a>
+    <strong>socket:receive (self[, non_blocking=false])</strong>
+    </dt>
+    <dd>
+    Receives a message to connected end points.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">non_blocking</span>
+         If true, this call will not <em>block</em>, even if there is no message to receive. In this case, false is returned
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+        Returns the message
+    </ol>
+     <h3>Or</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        Returns false, if the call was non_blocking and there wasn't a message ready to receive.
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket:shutdown"></a>
+    <strong>socket:shutdown (self, end_point)</strong>
+    </dt>
+    <dd>
+    Shuts down a socket's endpoint.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">end_point</span>
+            <span class="types"><span class="type">bool</span>, <span class="type">number</span> or <a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.5">table</a></span>
+         If boolean <code>true</code>, all endpoints are removed. If a number or the <code>socket.end_points[indx]</code> table, then the specified endpoint is removed.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+        self
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+        error message. This is usually caused by an invalid end_point.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "socket:close"></a>
+    <strong>socket:close (self)</strong>
+    </dt>
+    <dd>
+    Closes a socket.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="index.html#Class_nml">nml_socket</a></span>
+        self
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message.</li>
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

@@ -15,22 +15,36 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="nml.c">
+    <ClCompile Include="src\common.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="socket.c">
+    <ClCompile Include="src\dev_utils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="common.c">
+    <ClCompile Include="src\nml.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dev_utils.c">
+    <ClCompile Include="src\socket.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\protocols.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="nml.h">
+    <ClInclude Include="src\nml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\socket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="config.ld" />
+    <None Include="doc_src\socke_properties.md" />
+    <None Include="init.lua">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

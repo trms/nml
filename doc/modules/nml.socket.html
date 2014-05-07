@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>nml documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>ldoc</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Class_nml_socket">Class nml.socket </a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="nowrap">
+  <li><a href="../modules/nml.html">nml</a></li>
+  <li><strong>socket</strong></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>nml.socket</code></h1>
+
+<p>The main socket object.</p>
+<p></p>
+
+
+<h2><a href="#Class_nml_socket">Class nml.socket </a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#nml.socket:bind">nml.socket:bind (self, address)</a></td>
+	<td class="summary">Binds a socet to a local transport</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#nml.socket:connect">nml.socket:connect (self, address)</a></td>
+	<td class="summary">Connects a socket to a remote endpoint.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#nml.socket:send">nml.socket:send (self, message[, non_blocking=false])</a></td>
+	<td class="summary">Sends a message to connected end points.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#nml.socket:receive">nml.socket:receive (self[, non_blocking=false])</a></td>
+	<td class="summary">Receives a message to connected end points.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#nml.socket:shutdown">nml.socket:shutdown (self, table)</a></td>
+	<td class="summary">Shuts down a socket'sendpoint.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#nml.socket:close">nml.socket:close (self)</a></td>
+	<td class="summary">Closes a socket.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Class_nml_socket"></a>Class nml.socket </h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "nml.socket:bind"></a>
+    <strong>nml.socket:bind (self, address)</strong>
+    </dt>
+    <dd>
+    Binds a socet to a local transport
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><span class="type">nml_socket</span></span>
+
+        </li>
+        <li><span class="parameter">address</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+        	The address that the socket will bind to.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">nml_socket</span></span>
+        Returns self
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "nml.socket:connect"></a>
+    <strong>nml.socket:connect (self, address)</strong>
+    </dt>
+    <dd>
+    Connects a socket to a remote endpoint.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><span class="type">nml_socket</span></span>
+
+        </li>
+        <li><span class="parameter">address</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+        	The address that the socket will bind to.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">nml_socket</span></span>
+        Returns self
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "nml.socket:send"></a>
+    <strong>nml.socket:send (self, message[, non_blocking=false])</strong>
+    </dt>
+    <dd>
+    Sends a message to connected end points.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><span class="type">nml_socket</span></span>
+
+        </li>
+        <li><span class="parameter">message</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+        	The message to send.
+        </li>
+        <li><span class="parameter">non_blocking</span>
+         If true, this call will not block, even if the message cannot be sent. In this case, an error is sent
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">nml_socket</span></span>
+        Returns self
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "nml.socket:receive"></a>
+    <strong>nml.socket:receive (self[, non_blocking=false])</strong>
+    </dt>
+    <dd>
+    Receives a message to connected end points.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><span class="type">nml_socket</span></span>
+
+        </li>
+        <li><span class="parameter">non_blocking</span>
+         If true, this call will not block, even if there is no message to receive. In this case, false is returned
+         (<em>default</em> false)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.2/manual.html#6.4">string</a></span>
+        Returns the message
+    </ol>
+     <h3>Or</h3>
+    <ol>
+
+           <span class="types"><span class="type">bool</span></span>
+        Returns false, if the call was non_blocking and there wasn't a message ready to receive.
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "nml.socket:shutdown"></a>
+    <strong>nml.socket:shutdown (self, table)</strong>
+    </dt>
+    <dd>
+    Shuts down a socket'sendpoint.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><span class="type">nml_socket</span></span>
+
+        </li>
+        <li><span class="parameter">table</span>
+        , then the specified endpoint is removed.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">nml_socket</span></span>
+        self
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "nml.socket:close"></a>
+    <strong>nml.socket:close (self)</strong>
+    </dt>
+    <dd>
+    Closes a socket.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">self</span>
+            <span class="types"><span class="type">nml_socket</span></span>
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">nml_socket</span></span>
+        self
+    </ol>
+     <h3>Or</h3>
+    <ol>
+        <li>
+        nil</li>
+        <li>
+        error message.</li>
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

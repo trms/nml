@@ -1,17 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Label="PropertySheets">
-    <Import Project="..\..\MSVS_2010_props\lua_libraries.props" />
-  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IntDir>$(SolutionDir)_$(ProjectName)_build\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>core</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup>
-    <Link>
-      <AdditionalDependencies>lua52.lib;nanomsg.lib;%(AdditionalDependencies)</AdditionalDependencies>
-    </Link>
+    <Link />
     <PostBuildEvent>
-      <Command> </Command>
+      <Command>xcopy /I/F/Y .\src\*.lua %TargetDir%\nml\
+move /Y %TargetDir%core.* %TargetDir%\nml</Command>
+      <Message>Copy Lua Sources</Message>
     </PostBuildEvent>
+    <ClCompile>
+      <PreprocessorDefinitions>_WINDOWS;_USRDLL;NML_EXPORTS;_WINDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(TargetDir)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>nanomsg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(TargetDir)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <BuildMacro Include="TargetDir">
+      <Value>$(TargetDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
 </Project>
