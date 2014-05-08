@@ -1,8 +1,8 @@
 nuget {
 	nuspec {
 		id = nml;
-		title: nanomsg module for Lua;
-		version: 1.0.000;
+		title: nml - nanomsg module for Lua;
+		version: 1.0.000.8;
 		authors: {coapp, Andrew Starks, Tightrope Media Systems};
 		owners: {Tightrope Media Systems};
 		licenseUrl: "http://opensource.org/licenses/MIT";
@@ -16,16 +16,35 @@ nuget {
 	};
 
 	files {
+
+		lua += {
+			// #add-all-files : ::nuget.targets.[${condition}].CopyToOutput;
+			#add-all-files : Items.LuaLibraryFiles;
+			#destination : ${build_root}\${conditionFolder}\nml;
+
+				
+		};
+
 		docs : {
 			#destination = ${d_docs}\nml;
 			doc\**\*
 		};
-		[x64, v100]
-        	bin: {
-        		x64\Release\*.dll
-        	};
-        	pdb: x64\Release\*.pdb;
-        [win32, v100]
-        	bin: {Win32\Release\*.dll};
-    }
+
+		[x64, v100] {
+			lua: {"x64\Release\nml\**\*"};
+		};
+        [win32, v100] {
+			lua : {"Win32\Release\nml\**\*"};
+		};
+    };
+	// nuget push nml*1.0.000.8.nupkg 643b2456-0c2d-438a-bd63-10dc8e39c633 -Source https://www.myget.org/F/trms/api/v2/package
+	targets {
+        // Use the AferBuild to implement the copy
+        AfterBuild {
+            .Move {
+                SourceFiles = "@(LuaLibraryFiles)";
+                DestinationFiles = "@(LuaLibraryFiles->'$(TargetDir)nml\%(RecursiveDir)%(Filename)%(Extension)')";
+            };
+        };
+    };
 }
