@@ -16,18 +16,17 @@ nuget {
 	};
 
 	files {
-
-		lua += {
-			// #add-all-files : ::nuget.targets.[${condition}].CopyToOutput;
+		// declare a lua collection
+		lua : {
+			// copies the whole folder tree.
 			#add-all-files : Items.LuaLibraryFiles;
+			// set the destination in the package itself. 
 			#destination : ${build_root}\${conditionFolder}\nml;
-
-				
 		};
 
 		docs : {
 			#destination = ${d_docs}\nml;
-			doc\**\*
+			doc\**\*;
 		};
 
 		[x64, v100] {
@@ -39,12 +38,13 @@ nuget {
     };
 	// nuget push nml*1.0.000.8.nupkg 643b2456-0c2d-438a-bd63-10dc8e39c633 -Source https://www.myget.org/F/trms/api/v2/package
 	targets {
-        // Use the AferBuild to implement the copy
-        AfterBuild {
-            .Move {
-                SourceFiles = "@(LuaLibraryFiles)";
-                DestinationFiles = "@(LuaLibraryFiles->'$(TargetDir)nml\%(RecursiveDir)%(Filename)%(Extension)')";
-            };
-        };
-    };
+		AfterBuild {
+			.Copy {
+				DestinationFolder = "$(TargetDir)nml";
+				SourceFiles = "@(LuaLibraryFiles)";
+				SkipUnchangedFiles = true;
+				UseHardlinksIfPossible = true;
+			};
+		};
+	}
 }
