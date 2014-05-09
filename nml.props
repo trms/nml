@@ -20,7 +20,6 @@ move /Y %TargetDir%core.* %TargetDir%\nml</Command>
       <AdditionalIncludeDirectories>$(TargetDir)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>nanomsg.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(TargetDir)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

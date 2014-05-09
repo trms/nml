@@ -20,6 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">.\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -76,6 +78,11 @@
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -87,6 +94,11 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -97,6 +109,11 @@
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -107,6 +124,11 @@
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\common.c" />
@@ -131,6 +153,7 @@
     <Import Project="packages\lua.5.3.0002.6\build\native\lua.targets" Condition="Exists('packages\lua.5.3.0002.6\build\native\lua.targets')" />
     <Import Project="packages\nanomsg.redist.0.3.0504.1\build\native\nanomsg.redist.targets" Condition="Exists('packages\nanomsg.redist.0.3.0504.1\build\native\nanomsg.redist.targets')" />
     <Import Project="packages\nanomsg.0.3.0504.1\build\native\nanomsg.targets" Condition="Exists('packages\nanomsg.0.3.0504.1\build\native\nanomsg.targets')" />
+    <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -140,5 +163,6 @@
     <Error Condition="!Exists('packages\lua.5.3.0002.6\build\native\lua.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.3.0002.6\build\native\lua.targets'))" />
     <Error Condition="!Exists('packages\nanomsg.redist.0.3.0504.1\build\native\nanomsg.redist.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.redist.0.3.0504.1\build\native\nanomsg.redist.targets'))" />
     <Error Condition="!Exists('packages\nanomsg.0.3.0504.1\build\native\nanomsg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0504.1\build\native\nanomsg.targets'))" />
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
   </Target>
 </Project>
