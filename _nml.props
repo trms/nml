@@ -1,27 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
   <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
-  </PropertyGroup>
-  <PropertyGroup>
-    <IntDir>$(SolutionDir)_$(ProjectName)_build\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>core</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link />
-    <PostBuildEvent>
-      <Command>xcopy /I/F/Y .\src\*.lua %TargetDir%\nml\
-move /Y %TargetDir%core.* %TargetDir%\nml</Command>
-      <Message>Copy Lua Sources</Message>
-    </PostBuildEvent>
+    <PostBuildEvent />
     <ClCompile>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;NML_EXPORTS;_WINDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(TargetDir)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
-    <Link>
-      <AdditionalLibraryDirectories>$(TargetDir)</AdditionalLibraryDirectories>
-    </Link>
+    <Link />
   </ItemDefinitionGroup>
   <ItemGroup>
     <BuildMacro Include="TargetDir">

@@ -2,17 +2,17 @@ nuget {
 	nuspec {
 		id = nml;
 		title: nml - nanomsg module for Lua;
-		version: 1.0.000.8;
+		version: 1.0.000.11;
 		authors: {coapp, Andrew Starks, Tightrope Media Systems};
 		owners: {Tightrope Media Systems};
 		licenseUrl: "http://opensource.org/licenses/MIT";
-		releaseNotes: {@"Initial release."}; 
+		releaseNotes: {@"Fixed post build steps and the clobbering of the props."}; 
 		requireLicenseAcceptance:false;
-		summary: "A simple nml binding lua.";
+		summary: "A simple nanomsg binding lua.";
 		copyright: "Copyright 2013-2014 Tightrope Media Systems, Saint Paul, Minnesota";
 		tags: {native, Lua, module};
 		description: {
-@"nml is a cross-platform, high performance sleep timer for lua. It uses the operating system's (Windows/Mac/Linux) native sleep facility to pause Lua execution for a specified time.";}
+@"nml is a simple binding for nanomsg. It works with Lua 5.2 and 5.3 Work 1/2.";}
 	};
 
 	files {
@@ -36,7 +36,7 @@ nuget {
 			lua : {"Win32\Release\nml\**\*"};
 		};
     };
-	// nuget push nml*1.0.000.8.nupkg 643b2456-0c2d-438a-bd63-10dc8e39c633 -Source https://www.myget.org/F/trms/api/v2/package
+	// nuget push nml*1.0.000.9.nupkg 643b2456-0c2d-438a-bd63-10dc8e39c633 -Source https://www.myget.org/F/trms/api/v2/package
 	targets {
 		AfterBuild {
 			.Copy {
