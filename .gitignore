@@ -5,15 +5,10 @@
 *.lo
 *.o
 *.obj
-*.ilk
-*.pdb
-
-# Compiled headers.
 ipch/**
 
 # Nuget packages folder
 /packages/**
-
 
 # Compiled source #
 ###################
@@ -50,8 +45,6 @@ x64/
 Win32/
 _build/
 _install/
-# This is the package build directory.
-/_*_build/**/*
 
 ##next the regular ignoring
 
