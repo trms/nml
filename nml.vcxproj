@@ -1,7 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\ldoc.1.4.2.8\build\native\ldoc.props" Condition="Exists('packages\ldoc.1.4.2.8\build\native\ldoc.props')" />
+  <Import Project="packages\penlight.0.8.002.9\build\native\penlight.props" Condition="Exists('packages\penlight.0.8.002.9\build\native\penlight.props')" />
+  <Import Project="packages\luafilesystem.1.6.1.1\build\native\luafilesystem.props" Condition="Exists('packages\luafilesystem.1.6.1.1\build\native\luafilesystem.props')" />
+  <Import Project="packages\lua.5.3.0002.11\build\native\lua.props" Condition="Exists('packages\lua.5.3.0002.11\build\native\lua.props')" />
   <Import Project="packages\nanomsg.0.3.0504.4\build\native\nanomsg.props" Condition="Exists('packages\nanomsg.0.3.0504.4\build\native\nanomsg.props')" />
-  <Import Project="packages\lua.5.3.0002.9\build\native\lua.props" Condition="Exists('packages\lua.5.3.0002.9\build\native\lua.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -152,26 +155,35 @@
     <ClInclude Include="src\socket.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.ld" />
-    <None Include="doc_src\socke_properties.md" />
+    <None Include="Building_nml.md" />
+    <None Include="doc_src\socket_properties.md" />
     <None Include="init.lua" />
+    <None Include="LICENSE" />
     <None Include="packages.config" />
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-    <Import Project="packages\lua.5.3.0002.9\build\native\lua.targets" Condition="Exists('packages\lua.5.3.0002.9\build\native\lua.targets')" />
     <Import Project="packages\nanomsg.0.3.0504.4\build\native\nanomsg.targets" Condition="Exists('packages\nanomsg.0.3.0504.4\build\native\nanomsg.targets')" />
+    <Import Project="packages\lua.5.3.0002.11\build\native\lua.targets" Condition="Exists('packages\lua.5.3.0002.11\build\native\lua.targets')" />
+    <Import Project="packages\luafilesystem.1.6.1.1\build\native\luafilesystem.targets" Condition="Exists('packages\luafilesystem.1.6.1.1\build\native\luafilesystem.targets')" />
+    <Import Project="packages\penlight.0.8.002.9\build\native\penlight.targets" Condition="Exists('packages\penlight.0.8.002.9\build\native\penlight.targets')" />
+    <Import Project="packages\ldoc.1.4.2.8\build\native\ldoc.targets" Condition="Exists('packages\ldoc.1.4.2.8\build\native\ldoc.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-    <Error Condition="!Exists('packages\lua.5.3.0002.9\build\native\lua.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.3.0002.9\build\native\lua.props'))" />
-    <Error Condition="!Exists('packages\lua.5.3.0002.9\build\native\lua.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.3.0002.9\build\native\lua.targets'))" />
     <Error Condition="!Exists('packages\nanomsg.0.3.0504.4\build\native\nanomsg.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0504.4\build\native\nanomsg.props'))" />
     <Error Condition="!Exists('packages\nanomsg.0.3.0504.4\build\native\nanomsg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0504.4\build\native\nanomsg.targets'))" />
+    <Error Condition="!Exists('packages\lua.5.3.0002.11\build\native\lua.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.3.0002.11\build\native\lua.props'))" />
+    <Error Condition="!Exists('packages\lua.5.3.0002.11\build\native\lua.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.3.0002.11\build\native\lua.targets'))" />
+    <Error Condition="!Exists('packages\luafilesystem.1.6.1.1\build\native\luafilesystem.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\luafilesystem.1.6.1.1\build\native\luafilesystem.props'))" />
+    <Error Condition="!Exists('packages\luafilesystem.1.6.1.1\build\native\luafilesystem.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\luafilesystem.1.6.1.1\build\native\luafilesystem.targets'))" />
+    <Error Condition="!Exists('packages\penlight.0.8.002.9\build\native\penlight.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\penlight.0.8.002.9\build\native\penlight.props'))" />
+    <Error Condition="!Exists('packages\penlight.0.8.002.9\build\native\penlight.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\penlight.0.8.002.9\build\native\penlight.targets'))" />
+    <Error Condition="!Exists('packages\ldoc.1.4.2.8\build\native\ldoc.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\ldoc.1.4.2.8\build\native\ldoc.props'))" />
+    <Error Condition="!Exists('packages\ldoc.1.4.2.8\build\native\ldoc.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\ldoc.1.4.2.8\build\native\ldoc.targets'))" />
   </Target>
   <Target Name="AfterBuild" AfterTargets="Build">
     <Delete Files="$(OutDir)$(TargetName).ilk;$(OutDir)$(TargetName).exp" />

@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="doc">
+      <UniqueIdentifier>{0e381d1e-8ec1-4f89-8690-b17a0059f0b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\common.c">
@@ -40,11 +43,21 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="config.ld" />
-    <None Include="doc_src\socke_properties.md" />
     <None Include="init.lua">
       <Filter>Source Files</Filter>
     </None>
     <None Include="packages.config" />
+    <None Include="doc_src\socket_properties.md">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="Building_nml.md">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="LICENSE">
+      <Filter>doc</Filter>
+    </None>
+    <None Include="README.md">
+      <Filter>doc</Filter>
+    </None>
   </ItemGroup>
 </Project>
