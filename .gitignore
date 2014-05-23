@@ -21,7 +21,7 @@ ipch/**
 #don't ignore stuff in nuget folder.
 !/.nuget/**/*.*
 
-docs/**/*.html
+doc/**/*
 ## Except in libriaries
 *.so
 *.so.*
@@ -71,12 +71,6 @@ _install/
 *.sql
 *.sqlite
 
-# Leave .bootstrap alone! we need unix2dos.exe
-#!/src/.boostrap/**/*.com
-#!/src/.boostrap/**/*.class
-#!/src/.boostrap/**/*.dll
-#!/src/.boostrap/**/*.exe
-#!/src/.boostrap/**/*.dylib
 
 # OS generated files #
 ######################

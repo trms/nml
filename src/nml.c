@@ -1,8 +1,5 @@
 /***
-nml
-NanoMSG library for lua
-
-@module nml
+@module nml.core
 */
 
 // nanomsg.c
@@ -61,7 +58,7 @@ Creates a new nml socket object
 @function new
 @param[type=string]	protocol	The name of the socket's protocol
 @param[opt=false] is_raw		If true, the protocol is a raw socket
-@return nml_proto_socket				The new socket.
+@return nml_proto_socket		The new @{nml.socket}.
 */
 
 

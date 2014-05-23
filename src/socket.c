@@ -1,5 +1,5 @@
 /***The main socket object.
-@module nml
+@module nml.socket
 */
 
 

@@ -59,5 +59,8 @@
     <None Include="README.md">
       <Filter>doc</Filter>
     </None>
+    <None Include="config.ld">
+      <Filter>doc</Filter>
+    </None>
   </ItemGroup>
 </Project>
