@@ -1,8 +1,4 @@
-/***The main socket object.
-@module nml.socket
-*/
-
-
+/// @submodule nml
 #include "nml.h"
 #include "socket.h"
 #include <assert.h>
@@ -110,48 +106,7 @@ const char domain_str_ar [][16] = {
 	"pull", "surveyor", "respondent", "bus"
 };
 
-/***
-A nanomsg socket userdata object.
-@type socket 
 
-*/
-
-///The socket domain (raw or full socket) (read only)
-//@field[string] domain 
-
-
-
-///The protocol that the socket was created with. (read only)
-//@field protocol
-
-
-///The time that a socket tries to send pending outbound messages after close has been called, in milliseconds. A false value (`false` or `nil`) means infinite linger. 
-//Default value is `1000` (1 second).
-//@field linger 
-
-///Size of the send buffer, in bytes. To prevent blocking for messages larger than the buffer, exactly one message may be buffered in addition to the data in the send buffer. Default value is 128kB.
-//@field send_buffer
-
-///Size of the receive buffer, in bytes. To prevent blocking for messages larger than the buffer, exactly one message may be buffered in addition to the data in the receive buffer. Default value is 128kB.
-//@field receive_buffer
-
-///The timeout for send operation on the socket, in milliseconds. If message cannot be sent within the specified timeout, `nil` plus a timeout message is returned. False (`false`, but NOT `nil`) means infinite timeout (block forever). Default is false.
-//@field send_timeout 
-
-///The timeout for receive operation on the socket, in milliseconds. If no messages are waiting, then `false` is returned. False (`false`, but NOT `nil`) means infinite timeout (block forever). Default is false
-//@field receive_timeout 
-
-///For connection-based transports such as TCP, this option specifies how long to wait, in milliseconds, when connection is broken before trying to re-establish it. Note that actual reconnect interval may be randomised to some extent to prevent severe reconnection storms. Default value is `100` (0.1 second).
-//@field reconnect_interval 
-
-///This option is to be used only in addition to the @{reconnect_interval} option. It specifies maximum reconnection interval. On each reconnect attempt, the previous interval is doubled until `reconnect\_interval\_max` is reached. Value of `false` means that no exponential backoff is performed and reconnect interval is based only on @{reconnect_interval}. If `reconnect\_interval\_max` is less than @{reconnect_interval}, it is ignored. Default value is `false`.
-//@field reconnect_interval_max 
-
-///This is outbound priority of the socket. This option has no effect on socket types that send messages to all the peers. However, if the socket type sends each message to a single peer (or a limited set of peers), peers with high priority take precedence over peers with low priority. Highest priority is 1, lowest priority is 16. Default value is 8.
-//@field send_priority
-
-///If set to `true`, only IPv4 addresses are used. If set to `false`, both IPv4 and IPv6 addresses are used. Default value is `true`.
-//@field ipv_4_only 
 
 
 
@@ -264,9 +219,9 @@ int nml_generic_socket_constructor (lua_State *L, int nn_proto, const char * pro
 /***
 Binds a socet to a local transport
 @function bind
-@param[type=nml_socket]		self
+@param[type=nml]		self
 @param[type=string] address	The address that the socket will bind to. 
-@treturn[1] nml_socket Returns self
+@treturn[1] nml Returns self
 @return[2] nil
 @return[2] error message
 */
@@ -310,9 +265,9 @@ int nml_bind(lua_State *L)
 /***
 Connects a socket to a remote endpoint.
 @function connect
-@param[type=nml_socket]		self
+@param[type=nml]		self
 @param[type=string] address	The address that the socket will bind to. 
-@treturn[1] nml_socket Returns self
+@treturn[1] nml Returns self
 @return[2] nil
 @return[2] error message
 */
@@ -357,10 +312,10 @@ int nml_connect(lua_State *L)
 /***
 Sends a message to connected end points.
 @function send
-@param[type=nml_socket]		self
+@param[type=nml]		self
 @param[type=string] message	The message to send. 
 @param[opt=true] block If true or none or nil, this call will block on send. If false, then it will not *block*, even if the socket was not ready to send. In this case, false is returned.
-@treturn[1] nml_socket Returns self
+@treturn[1] nml Returns self
 @return[2] nil
 @return[2] error message.
 */
@@ -541,7 +496,7 @@ int nml_send(lua_State * L)
 /***
 Receives a message to connected end points.
 @function receive
-@param[type=nml_socket]		self
+@param[type=nml]		self
 @param[opt=true] block If true or none or nil, this call will block on receive. If false, then it will not *block*, even if there is no message to receive. In this case, false is returned.
 @treturn[1] string Returns the message
 @treturn[2] bool Returns false, if the call was not blocking and there wasn't a message ready to receive.
@@ -695,9 +650,9 @@ int nml_recv(lua_State * L)
 /***
 Shuts down a socket's endpoint.
 @function shutdown
-@param[type=nml_socket]		self
+@param[type=nml]		self
 @tparam bool|number|table end_point If boolean `true`, all endpoints are removed. If a number or the `socket.end_points[indx]` table, then the specified endpoint is removed.
-@treturn[1] nml_socket self
+@treturn[1] nml self
 @return[2] nil
 @treturn[2] string  error message. This is usually caused by an invalid end_point.
 */
@@ -789,8 +744,8 @@ int nml_getfd (lua_State * L)
 /***
 Closes a socket.
 @function close
-@param[type=nml_socket]		self
-@treturn[1] nml_socket self
+@param[type=nml]		self
+@treturn[1] nml self
 @return[2] nil
 @return[2] error message.
 */

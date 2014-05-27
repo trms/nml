@@ -1,5 +1,5 @@
 /***
-@module nml.core
+@submodule nml
 */
 
 // nanomsg.c
@@ -50,15 +50,14 @@ static const struct luaL_Reg nml_metamethods [] = {
 	{"terminate", nml_term},
 	{NULL, NULL}
 };
-///nml Library object
-//@type nml
+
 
 /***
 Creates a new nml socket object
-@function new
+@function nml.new
 @param[type=string]	protocol	The name of the socket's protocol
 @param[opt=false] is_raw		If true, the protocol is a raw socket
-@return nml_proto_socket		The new @{nml.socket}.
+@return nml			The new @{nml} socket.
 */
 
 
