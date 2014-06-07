@@ -1,0 +1,63 @@
+nuget {
+	nuspec {
+		id = nml;
+		title: nml - nanomsg module for Lua;
+		version: 1.0.000.19;
+		authors: {coapp, Andrew Starks, Christian Bechette, Tightrope Media Systems};
+		owners: {Tightrope Media Systems};
+		licenseUrl: "http://opensource.org/licenses/MIT";
+		releaseNotes: {@"Fixed post build steps and the clobbering of the props."}; 
+		requireLicenseAcceptance:false;
+		summary: "A simple nanomsg binding lua.";
+		copyright: "Copyright 2013-2014 Tightrope Media Systems, Saint Paul, Minnesota";
+		tags: {native, Lua, module};
+		description: {
+@"nml is a simple binding for nanomsg. It works with Lua 5.2 and 5.3 Work 1/2.";}
+	};
+
+	dependencies {
+        // This node defines any outside items which may be needed to consume this package.
+        packages : {
+            // This is a list of other NuGet packages required to use this package.
+            // Each item follows the format "<pkg_name>/<version>"
+            lua/"[5.2, 5.4)",
+            nanomsg/"0.3"
+        };
+    };
+
+	files {
+		// declare a lua collection
+		lualib : {
+			// copies the whole folder tree.
+			#add-all-files : Items.nmlBin;
+			// set the destination in the package itself. 
+			#destination : ${build_root}\${conditionFolder}\nml;
+		};
+		
+		[x64, v100, Release] {
+			lualib: {"x64\Release\nml\**\*"};
+		};
+		
+		[x64, v100, Debug] {
+			lualib: {"x64\Debug\nml\**\*"};
+		};
+
+        [win32, v100, Release] {
+			lualib: {"Win32\Release\nml\**\*"};
+		};
+		
+		[win32, v100, Debug] {
+			lualib: {"Win32\Debug\nml\**\*"};
+		};
+    };
+	targets {
+		AfterBuild {
+			.Copy {
+				DestinationFolder = "$(TargetDir)nml";
+				SourceFiles = "@(nmlBin)";
+				SkipUnchangedFiles = true;
+				UseHardlinksIfPossible = true;
+			};
+		};
+	}	
+}
