@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="spec">
+      <UniqueIdentifier>{006aefdb-63ca-4071-b020-318e495d25ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nanomsg">
+      <UniqueIdentifier>{1f2e3ba8-be53-47f0-a08f-dd91f22c644a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nanomsg\tests">
+      <UniqueIdentifier>{1dea98db-6e1b-4648-a283-bfe37dc175a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\api">
+      <UniqueIdentifier>{8da898c7-5e6a-4dce-b725-77b665232dff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lua">
+      <UniqueIdentifier>{c1a60dcb-0487-4f11-b040-b3cbc7d516ab}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\nanomsg\tests\testutil.h">
+      <Filter>nanomsg\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\nanomsg\tests\block.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\bus.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\device.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\domain.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\emfile.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\hash.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\inproc.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\inproc_shutdown.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\iovec.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\ipc.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\ipc_shutdown.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\list.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\msg.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\pair.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\pipeline.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\poll.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\prio.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\pubsub.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\reqrep.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\separation.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\shutdown.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\survey.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\symbol.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\tcp.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\tcp_shutdown.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\term.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\timeo.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\trie.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\nanomsg\tests\zerocopy.c">
+      <Filter>nanomsg\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="src\nml.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\allocmsg.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\term.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\bind.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\close.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmsg.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\connect.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\device.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\env.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\errno.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\freemsg.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\getsockopt.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\poll.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\recv.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\recvmsg.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\send.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\sendmsg.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\setsockopt.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\shutdown.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\socket.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\strerror.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\symbol.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\symbol_info.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="..\..\nanomsg\tests\README">
+      <Filter>nanomsg\tests</Filter>
+    </None>
+    <None Include="spec\creation.lua">
+      <Filter>spec</Filter>
+    </None>
+    <None Include="lua\init.lua">
+      <Filter>lua</Filter>
+    </None>
+    <None Include="spec\reqrep.lua">
+      <Filter>spec</Filter>
+    </None>
+  </ItemGroup>
+</Project>
