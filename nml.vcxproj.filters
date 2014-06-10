@@ -209,5 +209,8 @@
     <None Include="..\nanomsg\tests\README">
       <Filter>nanomsg\tests</Filter>
     </None>
+    <None Include="spec\shutdown.lua">
+      <Filter>spec</Filter>
+    </None>
   </ItemGroup>
 </Project>

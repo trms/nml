@@ -24,7 +24,7 @@ int l_recv(lua_State* L)
 
 	if (lua_tonumber(L, -1)!=-1) {
 		// put the string in lua space
-		lua_pushlstring(L, pData, (size_t)lua_tonumber(L, -1)); // don't send the null terminator
+		lua_pushlstring(L, pData, (size_t)lua_tonumber(L, -1)-1); // don't send the null terminator
 
 		// free the nn buffer
 		iIntermediateResult = nn_freemsg(pData);
