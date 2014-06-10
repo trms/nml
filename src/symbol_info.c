@@ -4,12 +4,14 @@
 // http://nanomsg.org/v0.3/nn_symbol_info.3.html
 int l_symbolinfo(lua_State* L)
 {
+	
 	struct nn_symbol_properties sym;
+	int opt_n = luaL_checkint(L, P1);
+	int bytes;
+	lua_pop(L, 1);
+	bytes = nn_symbol_info(opt_n, &sym, sizeof(sym));
 
-	luaL_checktype(L, P1, LUA_TNUMBER); // index
-
-	lua_pushnumber(L, nn_symbol_info((int)lua_tonumber(L, P1), &sym, sizeof(sym)));
-	if (lua_tonumber(L, -1)!=0) {
+	if (bytes !=0) {
 		lua_newtable(L);
 		
 		lua_pushstring(L, "value");
@@ -32,8 +34,9 @@ int l_symbolinfo(lua_State* L)
 		lua_pushnumber(L, sym.unit);
 		lua_settable(L, -3);
 
-		// bytes + table
-		return 2;
+	}
+	else {
+		lua_pushnil(L);
 	}
 	return 1;
 }
