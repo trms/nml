@@ -4,19 +4,12 @@
 // http://nanomsg.org/v0.3/nn_connect.3.html
 int l_connect(lua_State* L)
 {
-	int iEndpointId;
+	// socket
+	luaL_checktype(L, P1, LUA_TNUMBER);
 
-	if (isSocket(L, P1)==0)
-		return pushError(L, g_achInvalidSocketParameter);
+	// address
+	luaL_checktype(L, P2, LUA_TSTRING);
 
-	if (lua_type(L, P2)!=LUA_TSTRING)
-		return pushError(L, _T("expected a string address parameter"));
-
-	iEndpointId = nn_connect((int)lua_tonumber(L, P1), lua_tostring(L, P2));
-
-	if (iEndpointId==-1)
-		return pushErrorNo(L);
-
-	lua_pushnumber(L, iEndpointId);
+	lua_pushnumber(L, nn_connect((int)lua_tonumber(L, P1), lua_tostring(L, P2)));
 	return 1;
 }

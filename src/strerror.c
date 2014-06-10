@@ -4,7 +4,7 @@
 // http://nanomsg.org/v0.3/nn_strerror.3.html
 int l_strerror(lua_State* L)
 {
-	if (lua_type(L, 1)==LUA_TNUMBER) {
+	if (lua_type(L, 1)==LUA_TNUMBER) { // errnum
 		lua_pushstring(L, nn_strerror((int)lua_tonumber(L, 1)));
 		return 1;
 	}

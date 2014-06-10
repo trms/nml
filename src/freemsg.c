@@ -5,5 +5,5 @@
 int l_freemsg(lua_State* L)
 {
 	// this is called internally by nml
-	return pushError(L, _T("not implemented"));
+	return 0;
 }

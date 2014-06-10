@@ -4,15 +4,9 @@
 // http://nanomsg.org/v0.3/nn_shutdown.3.html
 int l_shutdown(lua_State* L)
 {
-	if (isSocket(L, P1)==0)
-		return pushError(L, g_achInvalidSocketParameter);
+	luaL_checktype(L, P1, LUA_TNUMBER); // socket
+	luaL_checktype(L, P2, LUA_TNUMBER); // eid
 
-	if (lua_type(L, P2)!=LUA_TNUMBER)
-		return pushError(L, _T("expected a number endpoint parameter"));
-
-	if (nn_shutdown((int)lua_tonumber(L, P1), (int)lua_tonumber(L, P2))==-1)
-		return pushErrorNo(L);
-
-	lua_pushnumber(L, 0);
+	lua_pushnumber(L,nn_shutdown((int)lua_tonumber(L, P1), (int)lua_tonumber(L, P2)));
 	return 1;
 }

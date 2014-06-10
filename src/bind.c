@@ -10,19 +10,12 @@ add a local endpoint to the socket
 */
 int l_bind(lua_State* L)
 {
-	int iEndpointId;
+	// socket
+	luaL_checktype(L, P1, LUA_TNUMBER);
 
-	if (isSocket(L, P1)==0)
-		return pushError(L, g_achInvalidSocketParameter);
+	// address
+	luaL_checktype(L, P2, LUA_TSTRING);
 
-	if (lua_type(L, P2)!=LUA_TSTRING)
-		return pushError(L, _T("expected a string address parameter"));
-
-	iEndpointId = nn_bind((int)lua_tonumber(L, P1), lua_tostring(L, P2));
-
-	if (iEndpointId==-1)
-		return pushErrorNo(L);
-	
-	lua_pushnumber(L, iEndpointId);
+	lua_pushnumber(L, nn_bind((int)lua_tonumber(L, P1), lua_tostring(L, P2)));
 	return 1;
 }

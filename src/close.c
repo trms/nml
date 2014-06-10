@@ -4,12 +4,9 @@
 // http://nanomsg.org/v0.3/nn_close.3.html
 int l_close(lua_State* L)
 {
-	if (isSocket(L, P1)==0)
-		return pushError(L, g_achInvalidSocketParameter);
+		// socket
+	luaL_checktype(L, P1, LUA_TNUMBER);
 
-	if (nn_close((int)lua_tonumber(L, P1))==-1)
-		return pushErrorNo(L); // this will push errno
-
-	lua_pushnumber(L, 0);
+	lua_pushnumber(L, nn_close((int)lua_tonumber(L, P1)));
 	return 1;
 }

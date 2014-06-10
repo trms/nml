@@ -1,8 +1,10 @@
 #pragma once
 
-#include <Windows.h>
+//#include <Windows.h> // needed for dllmain
 #include "stdlib.h"
 #include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
 #include "tchar.h"
 #include "nn.h"
 #include "pipeline.h"
@@ -162,11 +164,5 @@ static struct SNameValue g_NanomsgOptionTypes[] = {
 static const int g_iNanomsgOptionTypes = sizeof(g_NanomsgOptionTypes)/sizeof(g_NanomsgOptionTypes[0]);
 
 //////////////////////////////////////////////////////////////////////////
-
-int pushError(lua_State* L, const TCHAR* in_pchMessage);
-int pushErrorNo(lua_State* L);
-int stringToDomain(const TCHAR* in_pch, int* out_pi);
-int stringToProtocol(const TCHAR* in_pch, int* out_pi);
-int isSocket(lua_State* L, const int in_iStackOffset);
 
 int dump_stack(lua_State *L, const char * msg);
