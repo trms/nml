@@ -1,3 +1,25 @@
+/*
+    Copyright (c) 2014 Tightrope Media Systems inc.  All rights reserved.
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom
+    the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+    IN THE SOFTWARE.
+*/
+
 #pragma once
 
 //#include <Windows.h> // needed for dllmain
@@ -25,8 +47,6 @@
 #define P3 3
 #define P4 4
 #define P5 5
-
-static const TCHAR g_achInvalidSocketParameter[] = _T("expected first parameter to be an integer (socket identifier)");
 
 static const TCHAR g_achsocket[] = _T("socket");
 int l_socket(lua_State* L);
@@ -107,62 +127,5 @@ static struct SnmlApi g_apchApi[] = {{g_achsocket, l_socket}, {g_achclose, l_clo
 	{g_achcmsg, l_cmsg}, {g_achpoll, l_poll}, {g_acherrno, l_errno}, {g_achstrerror, l_strerror}, {g_achsymbol, l_symbol}, {g_achsymbolinfo, l_symbolinfo},
 	{g_achdevice, l_device}, {g_achterm, l_term}};
 static const int g_inmlApis = sizeof(g_apchApi)/sizeof(g_apchApi[0]);
-
-//////////////////////////////////////////////////////////////////////////
-
-typedef struct SNameValue{
-	TCHAR* name;
-	int value;
-}SNameValue;
-
-struct SNameValue* g_NanomsgProtocols; /*[] = {
-	{_T("NN_PUSH"), NN_PUSH}, 
-	{_T("NN_PULL"), NN_PULL}, 
-	{_T("NN_PUB"), NN_PUB}, 
-	{_T("NN_SUB"), NN_SUB}, 
-	{_T("NN_REQ"), NN_REQ}, 
-	{_T("NN_REP"), NN_REP}, 
-	{_T("NN_BUS"), NN_BUS}, 
-	{_T("NN_PAIR"), NN_PAIR}, 
-	{_T("NN_SURVEYOR"), NN_SURVEYOR}, 
-	{_T("NN_RESPONDENT"), NN_RESPONDENT}};*/
-int g_iNanoMsgProtocols; //= sizeof(g_NanomsgProtocols)/sizeof(g_NanomsgProtocols[0]);
-
-//////////////////////////////////////////////////////////////////////////
-
-static struct SNameValue g_NanomsgLevels[] = {
-	{_T("NN_SOL_SOCKET"), NN_SOL_SOCKET}, 
-	{_T("NN_PUSH"), NN_PUSH}, 
-	{_T("NN_PULL"), NN_PULL}, 
-	{_T("NN_PUB"), NN_PUB}, 
-	{_T("NN_SUB"), NN_SUB}, 
-	{_T("NN_REQ"), NN_REQ}, 
-	{_T("NN_REP"), NN_REP}, 
-	{_T("NN_BUS"), NN_BUS}, 
-	{_T("NN_PAIR"), NN_PAIR}, 
-	{_T("NN_SURVEYOR"), NN_SURVEYOR}, 
-	{_T("NN_RESPONDENT"), NN_RESPONDENT},
-	{_T("NN_TCP"), NN_TCP},
-	{_T("NN_IPC"), NN_IPC},
-	{_T("NN_INPROC"), NN_INPROC}};
-static const int g_iNanomsgLevels = sizeof(g_NanomsgLevels)/sizeof(g_NanomsgLevels[0]);
-
-//////////////////////////////////////////////////////////////////////////
-
-static struct SNameValue g_NanomsgOptionTypes[] = {
-	{_T("NN_LINGER"), NN_LINGER},
-	{_T("NN_SNDBUF"), NN_SNDBUF},
-	{_T("NN_RCVBUF"), NN_RCVBUF},
-	{_T("NN_SNDTIMEO"), NN_SNDTIMEO},
-	{_T("NN_RCVTIMEO"), NN_RCVTIMEO},
-	{_T("NN_RECONNECT_IVL"), NN_RECONNECT_IVL},
-	{_T("NN_RECONNECT_IVL_MAX"), NN_RECONNECT_IVL_MAX},
-	{_T("NN_SNDPRIO"), NN_SNDPRIO},
-	{_T("NN_IPV4ONLY"), NN_IPV4ONLY},
-	{_T("NN_SOCKET_NAME"), NN_SOCKET_NAME},
-};
-static const int g_iNanomsgOptionTypes = sizeof(g_NanomsgOptionTypes)/sizeof(g_NanomsgOptionTypes[0]);
-
-//////////////////////////////////////////////////////////////////////////
 
 int dump_stack(lua_State *L, const char * msg);

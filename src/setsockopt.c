@@ -1,18 +1,37 @@
+/*
+    Copyright (c) 2014 Tightrope Media Systems inc.  All rights reserved.
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom
+    the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+    IN THE SOFTWARE.
+*/
+
 #include "nml.h"
 
 // set a socket option
 // http://nanomsg.org/v0.3/nn_setsockopt.3.html
 int l_setsockopt(lua_State* L)
 {
-	int iValue;
+	// socket
+	// level
+	// option type
+	// option value
+	int iValue = luaL_checkint(L, P4);
 
-	luaL_checktype(L, P1, LUA_TNUMBER); // socket
-	luaL_checktype(L, P2, LUA_TNUMBER); // level
-	luaL_checktype(L, P3, LUA_TNUMBER); // option type
-	luaL_checktype(L, P4, LUA_TNUMBER); // option value
-
-	iValue = (int)lua_tonumber(L, P4);
-
-	lua_pushnumber(L, nn_setsockopt((int)lua_tonumber(L, P1), (int)lua_tonumber(L, P2), (int)lua_tonumber(L, P3), &iValue, sizeof(iValue)));
+	lua_pushnumber(L, nn_setsockopt(luaL_checkint(L, P1), luaL_checkint(L, P2), luaL_checkint(L, P3), &iValue, sizeof(iValue)));
 	return 1;
 }
