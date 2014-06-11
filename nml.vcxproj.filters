@@ -199,9 +199,6 @@
     <None Include="spec\creation.lua">
       <Filter>spec</Filter>
     </None>
-    <None Include="lua\init.lua">
-      <Filter>lua</Filter>
-    </None>
     <None Include="spec\reqrep.lua">
       <Filter>spec</Filter>
     </None>
@@ -216,6 +213,9 @@
     </None>
     <None Include="spec\poll.lua">
       <Filter>spec</Filter>
+    </None>
+    <None Include="nml\init.lua">
+      <Filter>lua</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\nanomsg.0.3.0530.4\build\native\nanomsg.props" Condition="Exists('packages\nanomsg.0.3.0530.4\build\native\nanomsg.props')" />
+  <Import Project="packages\nanomsg.0.3.0530.5\build\native\nanomsg.props" Condition="Exists('packages\nanomsg.0.3.0530.5\build\native\nanomsg.props')" />
   <Import Project="packages\lua.5.3.0002.15\build\native\lua.props" Condition="Exists('packages\lua.5.3.0002.15\build\native\lua.props')" />
   <Import Project="packages\busted.1.11.1.28\build\native\busted.props" Condition="Exists('packages\busted.1.11.1.28\build\native\busted.props')" />
   <Import Project="packages\penlight.0.8.002.9\build\native\penlight.props" Condition="Exists('packages\penlight.0.8.002.9\build\native\penlight.props')" />
@@ -384,7 +384,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
-    <None Include="lua\init.lua" />
+    <None Include="nml\init.lua" />
     <None Include="packages.config" />
     <None Include="spec\creation.lua" />
     <None Include="spec\pair.lua" />
@@ -403,7 +403,7 @@
     <Import Project="packages\penlight.0.8.002.9\build\native\penlight.targets" Condition="Exists('packages\penlight.0.8.002.9\build\native\penlight.targets')" />
     <Import Project="packages\busted.1.11.1.28\build\native\busted.targets" Condition="Exists('packages\busted.1.11.1.28\build\native\busted.targets')" />
     <Import Project="packages\lua.5.3.0002.15\build\native\lua.targets" Condition="Exists('packages\lua.5.3.0002.15\build\native\lua.targets')" />
-    <Import Project="packages\nanomsg.0.3.0530.4\build\native\nanomsg.targets" Condition="Exists('packages\nanomsg.0.3.0530.4\build\native\nanomsg.targets')" />
+    <Import Project="packages\nanomsg.0.3.0530.5\build\native\nanomsg.targets" Condition="Exists('packages\nanomsg.0.3.0530.5\build\native\nanomsg.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -427,16 +427,19 @@
     <Error Condition="!Exists('packages\busted.1.11.1.28\build\native\busted.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\busted.1.11.1.28\build\native\busted.targets'))" />
     <Error Condition="!Exists('packages\lua.5.3.0002.15\build\native\lua.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.3.0002.15\build\native\lua.props'))" />
     <Error Condition="!Exists('packages\lua.5.3.0002.15\build\native\lua.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.3.0002.15\build\native\lua.targets'))" />
-    <Error Condition="!Exists('packages\nanomsg.0.3.0530.4\build\native\nanomsg.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0530.4\build\native\nanomsg.props'))" />
-    <Error Condition="!Exists('packages\nanomsg.0.3.0530.4\build\native\nanomsg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0530.4\build\native\nanomsg.targets'))" />
+    <Error Condition="!Exists('packages\nanomsg.0.3.0530.5\build\native\nanomsg.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0530.5\build\native\nanomsg.props'))" />
+    <Error Condition="!Exists('packages\nanomsg.0.3.0530.5\build\native\nanomsg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0530.5\build\native\nanomsg.targets'))" />
   </Target>
   <ItemGroup>
     <LuaTests Include="$(SolutionDir)spec\*" />
   </ItemGroup>
+  <ItemGroup>
+    <LuaSource Include="$(SolutionDir)nml\*" />
+  </ItemGroup>
   <Target Name="AfterBuild" AfterTargets="Build">
     <Delete Files="$(OutDir)$(TargetName).ilk;$(OutDir)$(TargetName).exp" />
     <Delete Files="$(OutDir)$(TargetName).lib" />
-    <Copy SourceFiles="lua\init.lua" DestinationFolder="$(OutDir)$(ProjectName)\" />
+    <Copy SourceFiles="@(LuaSource)" DestinationFolder="$(OutDir)$(ProjectName)\" />
     <Move SourceFiles="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).pdb" DestinationFolder="$(OutDir)$(ProjectName)\" />
     <Copy SourceFiles="@(LuaTests)" DestinationFolder="$(OutDir)spec\" />
   </Target>
