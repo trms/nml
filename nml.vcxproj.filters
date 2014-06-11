@@ -190,6 +190,9 @@
     <ClCompile Include="..\nanomsg\tests\zerocopy.c">
       <Filter>nanomsg\tests</Filter>
     </ClCompile>
+    <ClCompile Include="src\sleep.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -209,6 +212,9 @@
       <Filter>spec</Filter>
     </None>
     <None Include="spec\pair.lua">
+      <Filter>spec</Filter>
+    </None>
+    <None Include="spec\poll.lua">
       <Filter>spec</Filter>
     </None>
   </ItemGroup>

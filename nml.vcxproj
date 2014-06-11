@@ -370,6 +370,7 @@
     <ClCompile Include="src\sendmsg.c" />
     <ClCompile Include="src\setsockopt.c" />
     <ClCompile Include="src\shutdown.c" />
+    <ClCompile Include="src\sleep.c" />
     <ClCompile Include="src\socket.c" />
     <ClCompile Include="src\strerror.c" />
     <ClCompile Include="src\symbol.c" />
@@ -387,6 +388,7 @@
     <None Include="packages.config" />
     <None Include="spec\creation.lua" />
     <None Include="spec\pair.lua" />
+    <None Include="spec\poll.lua" />
     <None Include="spec\reqrep.lua" />
     <None Include="spec\shutdown.lua" />
   </ItemGroup>

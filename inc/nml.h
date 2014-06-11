@@ -22,7 +22,7 @@
 
 #pragma once
 
-//#include <Windows.h> // needed for dllmain
+#include <Windows.h> // needed for dllmain, and sleep
 #include "stdlib.h"
 #include "lua.h"
 #include "lualib.h"
@@ -47,6 +47,9 @@
 #define P3 3
 #define P4 4
 #define P5 5
+
+static const TCHAR g_achsleep[] = _T("sleep");
+int l_sleep(lua_State* L);
 
 static const TCHAR g_achsocket[] = _T("socket");
 int l_socket(lua_State* L);
@@ -125,7 +128,7 @@ static struct SnmlApi g_apchApi[] = {{g_achsocket, l_socket}, {g_achclose, l_clo
 	{g_achgetsockopt, l_getsockopt}, {g_achbind, l_bind}, {g_achconnect, l_connect}, {g_achshutdown, l_shutdown}, {g_achsend, l_send}, 
 	{g_achrecv, l_recv}, {g_achsendmsg, l_sendmsg}, {g_achrecvmsg, l_recvmsg}, {g_achallocmsg, l_allocmsg}, {g_achfreemsg, l_freemsg}, 
 	{g_achcmsg, l_cmsg}, {g_achpoll, l_poll}, {g_acherrno, l_errno}, {g_achstrerror, l_strerror}, {g_achsymbol, l_symbol}, {g_achsymbolinfo, l_symbolinfo},
-	{g_achdevice, l_device}, {g_achterm, l_term}};
+	{g_achdevice, l_device}, {g_achterm, l_term}, {g_achsleep, l_sleep}};
 static const int g_inmlApis = sizeof(g_apchApi)/sizeof(g_apchApi[0]);
 
 int dump_stack(lua_State *L, const char * msg);

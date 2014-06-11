@@ -54,7 +54,7 @@ int l_poll(lua_State* L)
 		for (i=0; i<iLen; i++) {
 			// next element
 			lua_pushnumber(L, i+1);
-			lua_gettable(L, -2);
+			lua_gettable(L, 1);
 
 			if (lua_type(L, -1)==LUA_TTABLE) {
 				// the socket
@@ -87,7 +87,7 @@ int l_poll(lua_State* L)
 				lua_pushnumber(L, polls[i].revents);
 				lua_settable(L, -3);
 
-				lua_settable(L, -2);
+				lua_pop(L, 1);
 			}
 			// result + table
 			iRet = 2;
