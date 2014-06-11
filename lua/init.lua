@@ -1,6 +1,6 @@
 
 local nml_core = require'nml.core'
-local nml = setmetatable({}, {__index = nml_core})
+local nml = setmetatable({sym={}}, {__index = nml_core})
 --[[
 local pretty = require'pl.pretty'
 local write = pretty.write
@@ -16,29 +16,21 @@ end
 function pt(...)
 	print(ts(...))
 end
+]]
 
-
-
-local symbols, found, i = {}, true, 0
+local found, i = true, 0
 
 while found do
 	found = nml.symbolinfo(i)
-	-- pt(found)
-	if found and symbols[found.name] then 
-		symbols[found.name] = found
-	end
-	
+	if found then 
+		nml.sym[found.name] = found
+	end	
 	i=i+1
-end 
+end
 
-pt(symbols.NN_DOMAIN)
+--[[
 function nml.new()
 
 end
-
---]]
-
-
-
-
+]]
 return nml

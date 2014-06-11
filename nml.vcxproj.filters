@@ -212,5 +212,8 @@
     <None Include="spec\shutdown.lua">
       <Filter>spec</Filter>
     </None>
+    <None Include="spec\pair.lua">
+      <Filter>spec</Filter>
+    </None>
   </ItemGroup>
 </Project>

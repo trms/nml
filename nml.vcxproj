@@ -386,6 +386,7 @@
     <None Include="lua\init.lua" />
     <None Include="packages.config" />
     <None Include="spec\creation.lua" />
+    <None Include="spec\pair.lua" />
     <None Include="spec\reqrep.lua" />
     <None Include="spec\shutdown.lua" />
   </ItemGroup>
