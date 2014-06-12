@@ -49,8 +49,11 @@ int l_getsockopt(lua_State* L)
 	else if (option_type == NN_TYPE_INT) {
 
 		szValueSize = sizeof(int);
-		if(nn_getsockopt(socket, NN_SOL_SOCKET, 13,(void *) & optval , & szValueSize) !=-1)
+		if(nn_getsockopt(socket, level, option,(void *) & optval , & szValueSize) !=-1)
+		{
+			printf("Optval returned: %d\n", optval);
 			lua_pushinteger(L, optval);
+		}
 		else
 			lua_pushnil(L);
 	}

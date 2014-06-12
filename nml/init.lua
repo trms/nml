@@ -46,7 +46,6 @@ local setsockopt = assert(nml_core.setsockopt, "There is a getsockopt function."
 local function find_opt(option_name, socket_type, t_opts)
 	local option, value, level, option_type
 	if socket_option[option_name] then
-		print('getting', option_name, ts(socket_option[option_name]))
 		option = socket_option[option_name]
 		level = def_option_level
 	elseif  t_opts and t_opts[option_name] then
@@ -70,7 +69,6 @@ local options_factory = function(socket_type, t_opts)
 		local opt_val, level, option_type = find_opt(option_name, socket_type, t_opts)
 		--optval will be an error message.
 		if not opt_val then return opt_val, level end
-		print("calling with", socket[1], level, opt_val, option_type)
 		local val = getsockopt(socket[1], level, opt_val, option_type)
 		if not val then
 			return nil, nml_strerr()
@@ -222,7 +220,7 @@ for i,v in pairs(nml_core) do
 end
 local s = sp_constructors.sub()
 local s2 = sp_constructors.pub()
-print(s.protocol)
+print(s.sndbuf)
 -- print(s[1], s2[1])
 -- print(nml.strerror(nml.errno()) , s)
 -- pt(symbol_cat.transport_option)
