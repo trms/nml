@@ -43,11 +43,10 @@ int l_send(lua_State* L)
 	pData = nn_allocmsg(++sizeBuffer, 0); // use default allocator
 	if (pData!=NULL) {
 		// copy the message
-		//memcpy(pData, lua_tostring(L, P2), sizeBuffer-1);
-		strcpy(pData, lua_tostring(L, P2));
+		memcpy(pData, lua_tostring(L, P2), sizeBuffer-1);
 
 		// add the terminator
-		//pData[sizeBuffer-1] = '\0';
+		pData[sizeBuffer-1] = '\0';
 
 		// this will free the pData
 		lua_pushinteger(L, nn_send((int)lua_tointeger(L, P1), &pData, NN_MSG, (int)lua_tointeger(L, P3)));
