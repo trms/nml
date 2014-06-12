@@ -74,9 +74,10 @@ until not found
 
 
 local map_name = function(item,field,  categories)
-	item[field] = item[field] > 0 and categories[item[field]].name or nil
+	item[field .. "_name"] = item[field] > 0 and categories[item[field]].name or nil
 	return item
 end
+
 for i, v in pairs(symbols) do
 	if type(i) == "string" then 
 		map_name(v, "unit", symbol_cat.option_unit)

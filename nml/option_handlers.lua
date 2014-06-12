@@ -1,3 +1,6 @@
+local nml_config = require'nml.config'
+local symbol_cat = assert(nml_config[2])
+nml_config = nil
 _ENV = nil
 local option_handlers = {}
 

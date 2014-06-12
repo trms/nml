@@ -30,28 +30,33 @@ int l_getsockopt(lua_State* L)
 {
 
 	size_t szValueSize;
-	void * iValue;
+	int  optval;
 	char iStr[NML_MAX_STR];
 	int socket = luaL_checkint(L, P1);
 	int level = luaL_checkint(L, P2);
 	int option = luaL_checkint(L, P3);
 	int option_type = luaL_checkint(L,4);
-	
+
 	if (option_type == NN_TYPE_STR){
 		szValueSize = NML_MAX_STR;
-		
+
 		if(nn_getsockopt(socket, level, option, &iStr , &szValueSize) !=-1)
 			lua_pushlstring(L,(const char *) iStr, szValueSize - 1);
 		else
 			lua_pushnil(L);
 		
 	}
-	else {
+	else if (option_type == NN_TYPE_INT) {
+
 		szValueSize = sizeof(int);
-		if(nn_getsockopt(socket, level, option, &iValue , &szValueSize) !=-1)
-			lua_pushinteger(L, *(int *) iValue);
+		if(nn_getsockopt(socket, NN_SOL_SOCKET, 13,(void *) & optval , & szValueSize) !=-1)
+			lua_pushinteger(L, optval);
 		else
 			lua_pushnil(L);
+	}
+	else {
+		lua_pushnil(L);lua_pushfstring(L, "Unkown option type: %d", option_type);
+		return 2;
 	}
 	return 1;
 }
