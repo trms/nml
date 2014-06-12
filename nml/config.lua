@@ -38,7 +38,7 @@ repeat
 	lua_name = types[found.name] or found.name:lower():match("^nn_(.*)$") or found.name:lower()
 	-- print('lua_name', lua_name)
 	if ns[found.ns] then
-		c_name_space = ns[found.ns].name
+		c_name_space = ns[found.ns].c_name
 		name_space = ns[found.ns].name
 	else
 		error(("No namespace for %s"):format(found.name))

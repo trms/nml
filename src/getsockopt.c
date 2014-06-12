@@ -22,18 +22,36 @@
 
 #include "nml.h"
 
+#define NML_MAX_STR 256
+
 // get a socket option
 // http://nanomsg.org/v0.3/nn_getsockopt.3.html
 int l_getsockopt(lua_State* L)
 {
-	int iValue;
-	size_t szValueSize=sizeof(int);
 
-	lua_pushinteger(L, nn_getsockopt(luaL_checkint(L, P1), luaL_checkint(L, P2), luaL_checkint(L, P3), &iValue, &szValueSize));
-
-	if (lua_tointeger(L, -1)!=-1)
-		lua_pushinteger(L, iValue);
-	else
-		lua_pushnil(L);
-	return 2;
+	size_t szValueSize;
+	void * iValue;
+	char iStr[NML_MAX_STR];
+	int socket = luaL_checkint(L, P1);
+	int level = luaL_checkint(L, P2);
+	int option = luaL_checkint(L, P3);
+	int option_type = luaL_checkint(L,4);
+	
+	if (option_type == NN_TYPE_STR){
+		szValueSize = NML_MAX_STR;
+		
+		if(nn_getsockopt(socket, level, option, &iStr , &szValueSize) !=-1)
+			lua_pushlstring(L,(const char *) iStr, szValueSize - 1);
+		else
+			lua_pushnil(L);
+		
+	}
+	else {
+		szValueSize = sizeof(int);
+		if(nn_getsockopt(socket, level, option, &iValue , &szValueSize) !=-1)
+			lua_pushinteger(L, *(int *) iValue);
+		else
+			lua_pushnil(L);
+	}
+	return 1;
 }
