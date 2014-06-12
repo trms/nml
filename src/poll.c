@@ -37,16 +37,11 @@ int l_poll(lua_State* L)
 		};
 	*/
 	luaL_checktype(L, P1, LUA_TTABLE); // events table
-	luaL_checkint(L, P2); // #table (here for consistency with the C api)
-	luaL_checkint(L, P3); // timeout
+	luaL_checkint(L, P2); // timeout
 
 	// {{}, {}, ...}
-	lua_len(L, P1);
+	iLen = (int)luaL_len(L, P1);
 	
-	// use the smallest of thesoc two
-	iLen = (int)(lua_tointeger(L, -1)<lua_tointeger(L, P2)?lua_tointeger(L, -1):lua_tointeger(L, P2));
-	lua_pop(L, 1);
-
 	// malloc the buffer
 	polls = malloc(sizeof(struct nn_pollfd)*iLen);
 	
@@ -60,14 +55,13 @@ int l_poll(lua_State* L)
 				// the socket
 				lua_pushstring(L, "fd");
 				lua_gettable(L, -2);
-				luaL_checkint(L, -1);
-				polls[i].fd = (int)lua_tointeger(L, -1);
+				polls[i].fd = luaL_checkint(L, -1);
 				lua_pop(L, 1);
 				
 				// the events
 				lua_pushstring(L, "events");
 				lua_gettable(L, -2);
-				polls[i].events = (short)lua_tointeger(L, -1);
+				polls[i].events = (short)luaL_checkint(L, -1);
 				lua_pop(L, 1);
 			}
 			lua_pop(L, 1);

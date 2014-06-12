@@ -193,6 +193,9 @@
     <ClCompile Include="src\sleep.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
+    <ClCompile Include="src\select.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

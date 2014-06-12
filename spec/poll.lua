@@ -1,5 +1,6 @@
 local llthreads = require'llthreads'
 local nml=require'nml'
+local socket=require'socket'
 
 local AF_SP = nml.sym.AF_SP.value
 local NN_PAIR = nml.sym.NN_PAIR.value
@@ -9,6 +10,7 @@ local NN_POLLOUT = 2 -- nml.sym.NN_POLLOUT.value
 local SOCKET_ADDRESS = "inproc://a"
 local NN_RCVFD = nml.sym.NN_RCVFD.value
 local NN_SNDFD = nml.sym.NN_SNDFD.value
+local NN_SOL_SOCKET = nml.sym.NN_SOL_SOCKET.value
 
 local routine1 = [[
 {
@@ -35,35 +37,25 @@ local getevents = function(s, events, timeout)
 
     if events & NN_IN == NN_IN then
         rc, rcvfd = nml.getsockopt(s, NN_SOL_SOCKET, NN_RCVFD)
-        errno_assert (rc == 0);
-        nn_assert (fdsz == sizeof (rcvfd));
-        FD_SET (rcvfd, &pollset);
+        assert(nml.errno(rc) == 0))
+        pollset[#pollset+1] = rcvfd -- add it to the list
 	end 
 
-    if (events & NN_OUT) {
-        fdsz = sizeof (sndfd);
-        rc = nn_getsockopt (s, NN_SOL_SOCKET, NN_SNDFD, (char*) &sndfd, &fdsz);
-        errno_assert (rc == 0);
-        nn_assert (fdsz == sizeof (sndfd));
-        FD_SET (sndfd, &pollset);
-#if !defined NN_HAVE_WINDOWS
-        if (sndfd + 1 > maxfd)
-            maxfd = sndfd + 1;
-#endif
-    }
+    if events & NN_OUT == NN_OUT
+        rc, sndfd = nml.getsockopt(s, NN_SOL_SOCKET, NN_SNDFD)
+        assert(rc == 0)
+		pollset[#pollset+1] = sndfd
+    end
 
-    if (timeout >= 0) {
-        tv.tv_sec = timeout / 1000;
-        tv.tv_usec = (timeout % 1000) * 1000;
-    }
-#if defined NN_HAVE_WINDOWS
-    rc = select (0, &pollset, NULL, NULL, timeout < 0 ? NULL : &tv);
+    if timeout >= 0 then
+        tv.tv_sec = timeout / 1000
+        tv.tv_usec = (timeout % 1000) * 1000
+    end
+	-- only check for readability
+    rc = socket.select (0, pollset, nil, nil, timeout < 0 and nil or tv)
     wsa_assert (rc != SOCKET_ERROR);
-#else
-    rc = select (maxfd, &pollset, NULL, NULL, timeout < 0 ? NULL : &tv);
-    errno_assert (rc >= 0);
-#endif
-    revents = 0;
+    
+	revents = 0
     if ((events & NN_IN) && FD_ISSET (rcvfd, &pollset))
         revents |= NN_IN;
     if ((events & NN_OUT) && FD_ISSET (sndfd, &pollset))

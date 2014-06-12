@@ -367,6 +367,7 @@
     <ClCompile Include="src\poll.c" />
     <ClCompile Include="src\recv.c" />
     <ClCompile Include="src\recvmsg.c" />
+    <ClCompile Include="src\select.c" />
     <ClCompile Include="src\send.c" />
     <ClCompile Include="src\sendmsg.c" />
     <ClCompile Include="src\setsockopt.c" />
