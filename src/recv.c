@@ -37,7 +37,7 @@ int l_recv(lua_State* L)
 	// NOTE: this creates a copy of the data into lua space, which is what we want in this case since we're dealing with command strings
 
 	int iIntermediateResult;
-	char* pData;
+	void* pData;
 
 	// socket
 	// timeout
@@ -45,7 +45,7 @@ int l_recv(lua_State* L)
 
 	if (lua_tointeger(L, -1)!=-1) {
 		// put the string in lua space
-		lua_pushlstring(L, pData, (size_t)lua_tointeger(L, -1)-1); // don't send the null terminator
+		lua_pushlstring(L, pData, (size_t)lua_tointeger(L, -1));
 
 		// free the nn buffer
 		iIntermediateResult = nn_freemsg(pData);

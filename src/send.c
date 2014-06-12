@@ -30,7 +30,7 @@
 int l_send(lua_State* L)
 {
 	size_t sizeBuffer;
-	char* pData;
+	void* pData;
 
 	luaL_checkint(L, P1); // the socket
 	luaL_checktype(L, P2, LUA_TSTRING); // the message, a string
@@ -40,15 +40,11 @@ int l_send(lua_State* L)
 	lua_tolstring(L, P2, &sizeBuffer);
 	
 	// alloc the message, add the terminator since lua won't
-	pData = nn_allocmsg(++sizeBuffer, 0); // use default allocator
+	pData = nn_allocmsg(sizeBuffer, 0); // use default allocator
 	if (pData!=NULL) {
 		// copy the message
-		memcpy(pData, lua_tostring(L, P2), sizeBuffer-1);
-		dump_stack(L, "in send");
-
-		// add the terminator
-		pData[sizeBuffer-1] = '\0';
-
+		memcpy(pData, lua_tostring(L, P2), sizeBuffer);
+		
 		// this will free the pData
 		lua_pushinteger(L, nn_send((int)lua_tointeger(L, P1), &pData, NN_MSG, (int)lua_tointeger(L, P3)));
 	} else
