@@ -27,6 +27,6 @@
 int l_device(lua_State* L)
 {
 	// sockets
-	lua_pushnumber(L, nn_device(luaL_checkint(L, P1), luaL_checkint(L, P2)));
+	lua_pushinteger(L, nn_device(luaL_checkint(L, P1), luaL_checkint(L, P2)));
 	return 1;
 }

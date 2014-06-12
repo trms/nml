@@ -41,7 +41,7 @@ repeat
 		c_name_space = ns[found.ns].name
 		name_space = ns[found.ns].name
 	else
-		error(("No namespace fo %s"):format(ts(found)))
+		error(("No namespace for %s"):format(found.name))
 	end
 	value = found.value
 

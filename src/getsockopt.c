@@ -29,10 +29,10 @@ int l_getsockopt(lua_State* L)
 	int iValue;
 	size_t szValueSize=sizeof(int);
 
-	lua_pushnumber(L, nn_getsockopt(luaL_checkint(L, P1), luaL_checkint(L, P2), luaL_checkint(L, P3), &iValue, &szValueSize));
+	lua_pushinteger(L, nn_getsockopt(luaL_checkint(L, P1), luaL_checkint(L, P2), luaL_checkint(L, P3), &iValue, &szValueSize));
 
-	if (lua_tonumber(L, -1)!=-1)
-		lua_pushnumber(L, iValue);
+	if (lua_tointeger(L, -1)!=-1)
+		lua_pushinteger(L, iValue);
 	else
 		lua_pushnil(L);
 	return 2;

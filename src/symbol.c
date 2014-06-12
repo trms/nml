@@ -26,9 +26,12 @@
 // http://nanomsg.org/v0.3/nn_symbol.3.html
 int l_symbol(lua_State* L)
 {
-	if (lua_type(L, P1)==LUA_TNUMBER) {
-		lua_pushstring(L, nn_symbol((int)lua_tonumber(L, 1), NULL));
-		return 1;
-	}
-	return 0;
+	int iValue;
+	const char* pch = nn_symbol(luaL_checkint(L, P1), &iValue);
+	if (pch!=NULL)
+		lua_pushstring(L, pch);
+	else
+		lua_pushnil(L);
+	lua_pushinteger(L, iValue);
+	return 2;
 }

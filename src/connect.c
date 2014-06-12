@@ -28,6 +28,6 @@ int l_connect(lua_State* L)
 {
 	// socket
 	// address
-	lua_pushnumber(L, nn_connect(luaL_checkint(L, P1), luaL_checkstring(L, P2)));
+	lua_pushinteger(L, nn_connect(luaL_checkint(L, P1), luaL_checkstring(L, P2)));
 	return 1;
 }

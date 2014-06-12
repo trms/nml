@@ -48,6 +48,9 @@
 #define P4 4
 #define P5 5
 
+static const TCHAR g_achselect[] = _T("select");
+int l_select(lua_State* L);
+
 static const TCHAR g_achsleep[] = _T("sleep");
 int l_sleep(lua_State* L);
 

@@ -36,7 +36,7 @@ int l_symbolinfo(lua_State* L)
 		lua_newtable(L);
 		
 		lua_pushstring(L, "value");
-		lua_pushnumber(L, sym.value);
+		lua_pushinteger(L, sym.value);
 		lua_settable(L, -3);
 
 		lua_pushstring(L, "name");
@@ -44,15 +44,15 @@ int l_symbolinfo(lua_State* L)
 		lua_settable(L, -3);
 
 		lua_pushstring(L, "ns");
-		lua_pushnumber(L, sym.ns);
+		lua_pushinteger(L, sym.ns);
 		lua_settable(L, -3);
 
 		lua_pushstring(L, "type");
-		lua_pushnumber(L, sym.type);
+		lua_pushinteger(L, sym.type);
 		lua_settable(L, -3);
 
 		lua_pushstring(L, "unit");
-		lua_pushnumber(L, sym.unit);
+		lua_pushinteger(L, sym.unit);
 		lua_settable(L, -3);
 
 	}

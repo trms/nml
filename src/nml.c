@@ -41,7 +41,7 @@ int dump_stack (lua_State *L, const char * msg) {
 			break;
 								 }
 		case LUA_TNUMBER: { /* numbers */
-			printf("%g", lua_tonumber(L, i));
+			printf("%g", lua_tointeger(L, i));
 			break;
 								}
 		default: { /*anything else*/
