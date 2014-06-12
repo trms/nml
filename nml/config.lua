@@ -65,8 +65,7 @@ repeat
 	target_table[lua_name] = found
 	target_table[value] = found
 
-	symbols[value]  = found
-	symbols[lua_name] = found
+	symbols[found.c_name] = found
 
 	::continue::
 	i = i + 1

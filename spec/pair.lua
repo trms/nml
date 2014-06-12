@@ -2,7 +2,7 @@ require'busted'
 local nml = require'nml'
 local pw = require'pl.pretty'.write
 
---print("sym is a "..pw(nml.sym))
+print("sym is a "..pw(nml.sym))
 local AF_SP = nml.sym.AF_SP.value
 local NN_PAIR = nml.sym.NN_PAIR.value
 local NN_DONTWAIT = nml.sym.NN_DONTWAIT.value

@@ -50,7 +50,7 @@ do
 				if s < 0 then return nil, nml_strerr() end
 				local obj = {s}
 				--TODO SET SOCKET OPTIONS
-				pt(v.name, transport_option[i])
+				-- pt(v.name, transport_option[i])
 
 
 				return obj
@@ -60,7 +60,7 @@ do
 end
 
 -- pt(symbol_cat.domain)
-local nml = setmetatable({}, {__index = nml_core})
+local nml = setmetatable({sym = assert(symbols)}, {__index = nml_core})
 
 
 function nml.new (args)
@@ -83,10 +83,10 @@ for i,v in pairs(nml_core) do
 end
 local s = sp_constructors.sub()
 local s2 = sp_constructors.pub()
-print(s[1], s2[1])
+-- print(s[1], s2[1])
 -- print(nml.strerror(nml.errno()) , s)
 -- pt(symbol_cat.transport_option)
 -- pt(symbols.NN_NS_OPTION_TYPE, '\n')
 
 --]]
-return nml
+return setmetatable(nml, {__index = nml_core})

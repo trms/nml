@@ -44,6 +44,7 @@ int l_send(lua_State* L)
 	if (pData!=NULL) {
 		// copy the message
 		memcpy(pData, lua_tostring(L, P2), sizeBuffer-1);
+		dump_stack(L);
 
 		// add the terminator
 		pData[sizeBuffer-1] = '\0';
