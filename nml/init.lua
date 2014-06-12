@@ -2,6 +2,17 @@ local nml_core = require'nml.core'
 
 local unpack = unpack or table.unpack
 local symbols, symbol_cat = unpack(require'nml.config')
+local errno, strerr = nml_core.errno, nml_core.strerr
+
+local nml_strerr = function(n)
+	n = n or errno()
+	if n ~= 0 then
+		return ("%d: %s"):format(n, strerr(n))
+	else
+		return false
+	end
+end
+
 
 ---[[ Debug stuff
 do
@@ -24,30 +35,31 @@ end
 --]]
 
 
+local sp_constructors = {}
+do
+	local domains = symbol_cat.domain
+	local socket = nml_core.socket
+	local transport_option = symbol_cat.transport_option
+	for i, v in pairs(symbol_cat.protocol) do
+		if type(i) == "string" then
+			local proto = v.value
+			sp_constructors[i] = function(args)
+				local args = args or {}
+				local domain = args.raw and  domains.af_sp_raw.value or  domains.af_sp.value
+				local s = socket(domain , proto)
+				if s < 0 then return nil, nml_strerr() end
+				local obj = {s}
+				--TODO SET SOCKET OPTIONS
+				pt(v.name, transport_option[i])
 
-local function nml_index( t, i)
-	if type(i) ~= "string" then
-		return nil
-	end
 
-	if symbol_cat.protocol[i] then
-
-		do
-			local protocol = symbol_cat.protocol[i]
-			local socket = nml_core.socket
-			local domains = symbol_cat.domain
-			
-			local print = print
-			local _ENV = nil
-			return function (args)
-				local domain = domains[args and args.raw and "af_sp_raw" or "af_sp"]
-				print('going with', domain.value, domain.name, protocol.value, protocol.name)
-				return socket(domain.value, protocol.value)
+				return obj
 			end
 		end
 	end
 end
 
+-- pt(symbol_cat.domain)
 local nml = setmetatable({}, {__index = nml_core})
 
 
@@ -69,9 +81,10 @@ end
 for i,v in pairs(nml_core) do
 	-- print(i, v)
 end
-local s = nml_index(t, "sub")()
-print(s)
-print(nml.strerror(), s)
+local s = sp_constructors.sub()
+local s2 = sp_constructors.pub()
+print(s[1], s2[1])
+-- print(nml.strerror(nml.errno()) , s)
 -- pt(symbol_cat.transport_option)
 -- pt(symbols.NN_NS_OPTION_TYPE, '\n')
 
