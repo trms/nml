@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\llthreads2.0.1.1.4\build\native\llthreads2.props" Condition="Exists('packages\llthreads2.0.1.1.4\build\native\llthreads2.props')" />
   <Import Project="packages\nanomsg.0.3.0530.4\build\native\nanomsg.props" Condition="Exists('packages\nanomsg.0.3.0530.4\build\native\nanomsg.props')" />
   <Import Project="packages\lua.5.3.0002.15\build\native\lua.props" Condition="Exists('packages\lua.5.3.0002.15\build\native\lua.props')" />
   <Import Project="packages\busted.1.11.1.28\build\native\busted.props" Condition="Exists('packages\busted.1.11.1.28\build\native\busted.props')" />
@@ -404,6 +405,7 @@
     <Import Project="packages\busted.1.11.1.28\build\native\busted.targets" Condition="Exists('packages\busted.1.11.1.28\build\native\busted.targets')" />
     <Import Project="packages\lua.5.3.0002.15\build\native\lua.targets" Condition="Exists('packages\lua.5.3.0002.15\build\native\lua.targets')" />
     <Import Project="packages\nanomsg.0.3.0530.4\build\native\nanomsg.targets" Condition="Exists('packages\nanomsg.0.3.0530.4\build\native\nanomsg.targets')" />
+    <Import Project="packages\llthreads2.0.1.1.4\build\native\llthreads2.targets" Condition="Exists('packages\llthreads2.0.1.1.4\build\native\llthreads2.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -429,6 +431,8 @@
     <Error Condition="!Exists('packages\lua.5.3.0002.15\build\native\lua.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.3.0002.15\build\native\lua.targets'))" />
     <Error Condition="!Exists('packages\nanomsg.0.3.0530.4\build\native\nanomsg.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0530.4\build\native\nanomsg.props'))" />
     <Error Condition="!Exists('packages\nanomsg.0.3.0530.4\build\native\nanomsg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0530.4\build\native\nanomsg.targets'))" />
+    <Error Condition="!Exists('packages\llthreads2.0.1.1.4\build\native\llthreads2.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\llthreads2.0.1.1.4\build\native\llthreads2.props'))" />
+    <Error Condition="!Exists('packages\llthreads2.0.1.1.4\build\native\llthreads2.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\llthreads2.0.1.1.4\build\native\llthreads2.targets'))" />
   </Target>
   <ItemGroup>
     <LuaTests Include="$(SolutionDir)spec\*" />

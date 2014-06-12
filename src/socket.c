@@ -25,7 +25,7 @@
 int l_socket(lua_State* L)
 {
 	// return the newly created socket
-	lua_pushnumber(L, nn_socket(luaL_checkint(L, P1), luaL_checkint(L, P2)));
+	lua_pushinteger(L, nn_socket(luaL_checkint(L, P1), luaL_checkint(L, P2)));
 	
 	return 1;
 }

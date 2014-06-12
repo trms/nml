@@ -32,6 +32,6 @@ int l_setsockopt(lua_State* L)
 	// option value
 	int iValue = luaL_checkint(L, P4);
 
-	lua_pushnumber(L, nn_setsockopt(luaL_checkint(L, P1), luaL_checkint(L, P2), luaL_checkint(L, P3), &iValue, sizeof(iValue)));
+	lua_pushinteger(L, nn_setsockopt(luaL_checkint(L, P1), luaL_checkint(L, P2), luaL_checkint(L, P3), &iValue, sizeof(iValue)));
 	return 1;
 }

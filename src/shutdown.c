@@ -28,6 +28,6 @@ int l_shutdown(lua_State* L)
 {
 	// socket
 	// eid
-	lua_pushnumber(L,nn_shutdown(luaL_checkint(L, P1), luaL_checkint(L, P2)));
+	lua_pushinteger(L,nn_shutdown(luaL_checkint(L, P1), luaL_checkint(L, P2)));
 	return 1;
 }

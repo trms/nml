@@ -1,4 +1,4 @@
---local llthreads = require'llthreads'
+local llthreads = require'llthreads'
 local nml=require'nml'
 
 local AF_SP = nml.sym.AF_SP.value
@@ -7,6 +7,8 @@ local NN_DONTWAIT = nml.sym.NN_DONTWAIT.value
 local NN_POLLIN = 1 -- nml.sym.NN_POLLIN.value
 local NN_POLLOUT = 2 -- nml.sym.NN_POLLOUT.value
 local SOCKET_ADDRESS = "inproc://a"
+local NN_RCVFD = nml.sym.NN_RCVFD.value
+local NN_SNDFD = nml.sym.NN_SNDFD.value
 
 local routine1 = [[
 {
@@ -22,32 +24,21 @@ local routine2 = [[
 
 local NN_IN = 1
 local NN_OUT = 2
---[[
+
 local getevents = function(s, events, timeout)
-{
     local rc;
-    fd_set pollset;
+    local pollset = {}
     local rcvfd;
     local sndfd;
-    
-	size_t fdsz;
-    struct timeval tv;
-    
+	local tv = {}
 	local revents;
 
-    FD_ZERO (&pollset);
-
-    if (events & NN_IN) {
-        fdsz = sizeof (rcvfd);
-        rc = nn_getsockopt (s, NN_SOL_SOCKET, NN_RCVFD, (char*) &rcvfd, &fdsz);
+    if events & NN_IN == NN_IN then
+        rc, rcvfd = nml.getsockopt(s, NN_SOL_SOCKET, NN_RCVFD)
         errno_assert (rc == 0);
         nn_assert (fdsz == sizeof (rcvfd));
         FD_SET (rcvfd, &pollset);
-#if !defined NN_HAVE_WINDOWS
-        if (rcvfd + 1 > maxfd)
-            maxfd = rcvfd + 1;
-#endif
-    }
+	end 
 
     if (events & NN_OUT) {
         fdsz = sizeof (sndfd);
@@ -107,14 +98,13 @@ assert(pfd[2].revents == NN_POLLOUT)
 nml.close(sc)
 nml.close(sb)
 
---[[
-/*  Create a simple topology. */
-sb = test_socket (AF_SP, NN_PAIR);
-test_bind (sb, SOCKET_ADDRESS);
-sc = test_socket (AF_SP, NN_PAIR);
-test_connect (sc, SOCKET_ADDRESS);
+-- /*  Create a simple topology. */
+sb = nml.socket(AF_SP, NN_PAIR)
+nml.bind(sb, SOCKET_ADDRESS)
+sc = nml.socket(AF_SP, NN_PAIR)
+nml.connect(sc, SOCKET_ADDRESS)
 
-/*  Check the initial state of the socket. */
+-- /*  Check the initial state of the socket. */
 rc = getevents (sb, NN_IN | NN_OUT, 1000);
 nn_assert (rc == NN_OUT);
 

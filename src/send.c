@@ -32,9 +32,9 @@ int l_send(lua_State* L)
 	size_t sizeBuffer;
 	char* pData;
 
-	luaL_checktype(L, P1, LUA_TNUMBER); // the socket
+	luaL_checkint(L, P1); // the socket
 	luaL_checktype(L, P2, LUA_TSTRING); // the message, a string
-	luaL_checktype(L, P3, LUA_TNUMBER); // flags
+	luaL_checkint(L, P3); // flags
 
 	// message
 	lua_tolstring(L, P2, &sizeBuffer);
@@ -49,7 +49,7 @@ int l_send(lua_State* L)
 		pData[sizeBuffer-1] = '\0';
 
 		// this will free the pData
-		lua_pushnumber(L, nn_send((int)lua_tonumber(L, P1), &pData, NN_MSG, (int)lua_tonumber(L, P3)));
+		lua_pushinteger(L, nn_send((int)lua_tointeger(L, P1), &pData, NN_MSG, (int)lua_tointeger(L, P3)));
 	} else
 		lua_pushnil(L);
 	return 1;	

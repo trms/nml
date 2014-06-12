@@ -33,6 +33,6 @@ add a local endpoint to the socket
 int l_bind(lua_State* L)
 {
 	// address
-	lua_pushnumber(L, nn_bind(luaL_checkint(L, P1), luaL_checkstring(L, P2)));
+	lua_pushinteger(L, nn_bind(luaL_checkint(L, P1), luaL_checkstring(L, P2)));
 	return 1;
 }
