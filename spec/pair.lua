@@ -2,14 +2,14 @@ require'busted'
 local nml = require'nml'
 local pw = require'pl.pretty'.write
 
-print("sym is a "..pw(nml.sym))
+-- print('package', package.path)
+-- print("sym is a "..pw(nml.sym))
 local AF_SP = nml.sym.AF_SP.value
 local NN_PAIR = nml.sym.NN_PAIR.value
 local NN_DONTWAIT = nml.sym.NN_DONTWAIT.value
 local SOCKET_ADDRESS = "inproc://a"
 local sb
 local sc
-
 describe("test NN_PAIR #NN_PAIR", function()
 	it("creates a first NN_PAIR socket", function()
 		sb = nml.socket(AF_SP, NN_PAIR)

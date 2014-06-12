@@ -70,8 +70,6 @@ end
 
 
 
-
-
 ---[[local testing
 -- pt("domain", symbol_cat.domain, symbol_cat.flag)
 for i, v in pairs(symbol_cat.domain) do
