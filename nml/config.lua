@@ -36,7 +36,7 @@ repeat
 		goto continue
 	end
 	lua_name = types[found.name] or found.name:lower():match("^nn_(.*)$") or found.name:lower()
-	-- print('lua_name', lua_name)
+	print('lua_name', lua_name)
 	if ns[found.ns] then
 		c_name_space = ns[found.ns].name
 		name_space = ns[found.ns].name
