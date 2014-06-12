@@ -217,5 +217,8 @@
     <None Include="nml\init.lua">
       <Filter>lua</Filter>
     </None>
+    <None Include="nml\config.lua">
+      <Filter>lua</Filter>
+    </None>
   </ItemGroup>
 </Project>

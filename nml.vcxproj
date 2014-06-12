@@ -1,4 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="packages\nanomsg.0.3.0530.5\build\native\nanomsg.props" Condition="Exists('packages\nanomsg.0.3.0530.5\build\native\nanomsg.props')" />
   <Import Project="packages\llthreads2.0.1.1.4\build\native\llthreads2.props" Condition="Exists('packages\llthreads2.0.1.1.4\build\native\llthreads2.props')" />
   <Import Project="packages\lua.5.3.0002.15\build\native\lua.props" Condition="Exists('packages\lua.5.3.0002.15\build\native\lua.props')" />
@@ -384,6 +385,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
+    <None Include="nml\config.lua" />
     <None Include="nml\init.lua" />
     <None Include="packages.config" />
     <None Include="spec\creation.lua" />
@@ -432,7 +434,7 @@
     <Error Condition="!Exists('packages\nanomsg.0.3.0530.5\build\native\nanomsg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0530.5\build\native\nanomsg.targets'))" />
     <Error Condition="!Exists('packages\llthreads2.0.1.1.4\build\native\llthreads2.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\llthreads2.0.1.1.4\build\native\llthreads2.props'))" />
     <Error Condition="!Exists('packages\llthreads2.0.1.1.4\build\native\llthreads2.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\llthreads2.0.1.1.4\build\native\llthreads2.targets'))" />
-</Target>
+  </Target>
   <ItemGroup>
     <LuaTests Include="$(SolutionDir)spec\*" />
   </ItemGroup>
