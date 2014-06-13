@@ -1,16 +1,10 @@
 
 --[[-- common socket metheods
 TODO:
-    
-    send
-    recv
     poll
-    sleep
-    
-    
-    
 FINISHED:
-	
+	send
+    recv
 	setsockopt 
 	socket 
     strerror 
@@ -21,6 +15,7 @@ FINISHED:
     shutdown_all * shuts down all registered endpoints, local, remote or both (both if no arguments)
     close
     term
+    sleep
 
 NOT IMPORTING:
     errno --wrapped in nml_error
@@ -155,8 +150,7 @@ do
 end
 function nml:poll ()
 end
-function nml:sleep ()
-end
+
 function nml:shutdown_all(where)
 	if not self[1] then return nil, self:nml_err("No socket.") end
 	if not where then 
@@ -277,6 +271,8 @@ function socket_mt:__index (index)
 		elseif self.symbol_cat.socket_option[index] or self.proto_options[index] then
 			return self:getsockopt(index)
 		
+		elseif self.core[index] then
+			return self.core[index]
 		else
 			return nil
 		end
@@ -311,6 +307,15 @@ function nml.socket(args)
 
 	return setmetatable(socket, socket_mt) 
 end
+--[[
+TODO: Write a wrapper for sub that:
+
+wraps the send and receive functions to take in topics
+make subscribe and unsubscribe store the values in lua, given that nanomsg won't cough them up.
+make receive strip the topic, but return it as a second value.
+function nml.sub(args)
+
+end--]]
 
 setmetatable(nml, {
 	__index = function(self, index)
@@ -388,10 +393,8 @@ local sleep = nml.core.sleep
 
 local s_pub = nml.pub()
 local s_sub = nml.sub()
-local long_topic = string.rep("a", 1023)
-local longer_topic = string.rep("a", 1022)
-longer_topic = longer_topic .. "a"
-print("Setting subscribe option 1234567890", s_sub:setsockopt("subscribe", long_topic))
+
+print("Setting subscribe option foo", s_sub:setsockopt("subscribe", "foo"))
 print("Setting subscribe option bar", s_sub:setsockopt("subscribe", "bar"))
 print("sub socket timeout is set to",  s_sub:getsockopt("rcvtimeo"))
 print("setting timeout", s_sub:setsockopt("rcvtimeo", 1000))
@@ -401,7 +404,7 @@ s_pub:bind(url)
 s_sub:connect(url)
 -- print(s_pub[1], s_sub[1])
 
-print("sending on abcdefghij", s_pub:send(longer_topic .."\0hello"))
+print("sending on abcdefghij", s_pub:send("foo\0hello"))
 
 print("receiving...")
 print(s_sub:recv())
