@@ -32,21 +32,31 @@ int l_send(lua_State* L)
 	size_t sizeBuffer;
 	void* pData;
 
-	luaL_checkint(L, P1); // the socket
-	luaL_checktype(L, P2, LUA_TSTRING); // the message, a string
-	luaL_checkint(L, P3); // flags
-
+	int socket = luaL_checkint(L, P1); // the socket
 	// message
-	lua_tolstring(L, P2, &sizeBuffer);
+	//TODO: IF USERDATA, then it's allocated by
+	//NML (or there is a flag that says how it's allocated) and we don't need to copy.
+	//note: the luaL version always converts into a string.
+	const char * msg = luaL_tolstring(L, P2, &sizeBuffer);
+
+	int flags = luaL_optint(L, P3, 0); // flags
+	int result;
+
+	
+	
 	
 	// alloc the message, add the terminator since lua won't
 	pData = nn_allocmsg(sizeBuffer, 0); // use default allocator
 	if (pData!=NULL) {
 		// copy the message
-		memcpy(pData, lua_tostring(L, P2), sizeBuffer);
+		memcpy(pData, msg, sizeBuffer);
 		
 		// this will free the pData
-		lua_pushinteger(L, nn_send((int)lua_tointeger(L, P1), &pData, NN_MSG, (int)lua_tointeger(L, P3)));
+		result = nn_send(socket, &pData, NN_MSG, flags);
+		if (result != -1 )
+			lua_pushinteger(L, result);
+		else
+			lua_pushnil(L);
 	} else
 		lua_pushnil(L);
 	return 1;	

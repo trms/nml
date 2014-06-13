@@ -22,7 +22,7 @@
 
 #include "nml.h"
 
-#define NML_MAX_STR 256
+
 
 // get a socket option
 // http://nanomsg.org/v0.3/nn_getsockopt.3.html
@@ -47,18 +47,14 @@ int l_getsockopt(lua_State* L)
 		
 	}
 	else if (option_type == NN_TYPE_INT) {
-
 		szValueSize = sizeof(int);
 		if(nn_getsockopt(socket, level, option,(void *) & optval , & szValueSize) !=-1)
-		{
-			printf("Optval returned: %d\n", optval);
 			lua_pushinteger(L, optval);
-		}
 		else
 			lua_pushnil(L);
 	}
 	else {
-		lua_pushnil(L);lua_pushfstring(L, "Unkown option type: %d", option_type);
+		lua_pushnil(L); lua_pushfstring(L, "Unkown option type: %d", option_type);
 		return 2;
 	}
 	return 1;

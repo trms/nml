@@ -48,6 +48,9 @@
 #define P4 4
 #define P5 5
 
+//max string length for options
+#define NML_MAX_STR 1024
+
 static const TCHAR g_achselect[] = _T("select");
 int l_select(lua_State* L);
 

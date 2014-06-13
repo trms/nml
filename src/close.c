@@ -27,6 +27,6 @@
 int l_close(lua_State* L)
 {
 		// socket
-	lua_pushinteger(L, nn_close(luaL_checkint(L, P1)));
+	lua_pushboolean(L, nn_close(luaL_checkint(L, P1)) != -1 );
 	return 1;
 }

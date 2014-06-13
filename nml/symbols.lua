@@ -87,4 +87,4 @@ for i, v in pairs(symbols) do
 end
 
 
-return {symbols, symbol_cat}
+return {symbols = symbols, symbol_cat = symbol_cat}

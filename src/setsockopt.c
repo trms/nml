@@ -30,8 +30,36 @@ int l_setsockopt(lua_State* L)
 	// level
 	// option type
 	// option value
-	int iValue = luaL_checkint(L, P4);
+	void * opt_value;
+	size_t opt_size;
+	int iValue;
+	int socket =	luaL_checkint(L, P1);
+	int level =		luaL_checkint(L, P2);
+	int option =	luaL_checkint(L, P3); 
 
-	lua_pushinteger(L, nn_setsockopt(luaL_checkint(L, P1), luaL_checkint(L, P2), luaL_checkint(L, P3), &iValue, sizeof(iValue)));
+	if (  lua_isnumber(L, P4) ) {
+		iValue = (int) lua_tointeger(L, P4);
+		opt_size = sizeof(iValue);
+		opt_value = &iValue;
+	}
+	else if (lua_isstring(L, P4) ) {
+		opt_value = (void *) lua_tolstring(L, P4, &opt_size);
+		++opt_size; //lua always puts a nil after the string, but reports a size that does not include it.
+		
+		if (opt_size > NML_MAX_STR) {
+			printf("opt_size %d\n", opt_size);
+			lua_pushnil(L);
+			lua_pushfstring(L, "nml error: The option value is greater than the maximum size allowed, %d.", NML_MAX_STR);
+			return 2;
+		}
+	} else {
+		lua_pushnil(L);
+		lua_pushfstring(L, "nml error: The option value type '%s' is invalid.",
+			lua_typename(L, lua_type(L, P4)));
+		return 2;
+	}
+	
+	lua_pushboolean(L, nn_setsockopt( socket, level, option, opt_value, opt_size) != -1 );
+
 	return 1;
 }

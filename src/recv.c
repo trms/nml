@@ -38,22 +38,20 @@ int l_recv(lua_State* L)
 
 	int iIntermediateResult;
 	void* pData;
-
+	int flags = luaL_optint(L, P2, 0); // flags
 	// socket
 	// timeout
-	lua_pushinteger(L, nn_recv(luaL_checkint(L, P1), &pData, NN_MSG, luaL_checkint(L, P2)));
+	size_t buff_size =  nn_recv(luaL_checkint(L, P1), &pData, NN_MSG, flags);
 
-	if (lua_tointeger(L, -1)!=-1) {
+	if (buff_size !=-1) {
 		// put the string in lua space
-		lua_pushlstring(L, pData, (size_t)lua_tointeger(L, -1));
+		lua_pushlstring(L, pData, buff_size);
 
 		// free the nn buffer
 		iIntermediateResult = nn_freemsg(pData);
 		assert(iIntermediateResult!=-1); // I don't want to return this to the caller but I should have the ability to spot this problem in debug
-
-		// result + string
-		return 2;
-	}
+	} else
+		lua_pushnil(L);
 	// result
 	return 1;
 }
