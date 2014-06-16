@@ -10,6 +10,7 @@ local NN_DONTWAIT = nml.sym.NN_DONTWAIT.value
 local SOCKET_ADDRESS = "inproc://a"
 local sb
 local sc
+
 describe("test NN_PAIR #NN_PAIR", function()
 	it("creates a first NN_PAIR socket", function()
 		sb = nml.socket(AF_SP, NN_PAIR)
