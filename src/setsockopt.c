@@ -44,10 +44,8 @@ int l_setsockopt(lua_State* L)
 	}
 	else if (lua_isstring(L, P4) ) {
 		opt_value = (void *) lua_tolstring(L, P4, &opt_size);
-		++opt_size; //lua always puts a nil after the string, but reports a size that does not include it.
-		
+		//++opt_size;  don't include the \0
 		if (opt_size > NML_MAX_STR) {
-			printf("opt_size %d\n", opt_size);
 			lua_pushnil(L);
 			lua_pushfstring(L, "nml error: The option value is greater than the maximum size allowed, %d.", NML_MAX_STR);
 			return 2;

@@ -2,7 +2,7 @@ local nml_symbols = require'nml.symbols'
 local symbol_cat = assert(nml_symbols.symbol_cat)
 nml_symbols = nil
 _ENV = nil
-local option_handlers = {}
+local options = {}
 
 local trans_get = function (value, cat)
 	return cat[value] and cat[value].name
@@ -12,7 +12,7 @@ local trans_set = function (name,cat)
 	return cat[name] and cat[name].value
 end
 
-option_handlers.protocol = {
+options.protocol = {
 get = function (self, value)
 	return trans_get(value, symbol_cat.protocol)
 end,
@@ -20,7 +20,7 @@ set = function (self, name)
 	return trans_set(value, symbol_cat.protocol)
 end}
 
-option_handlers.domain = {
+options.domain = {
 	get = function (self, value)
 		return trans_get(value, symbol_cat.domain)
 	end,
@@ -28,18 +28,27 @@ option_handlers.domain = {
 		return trans_set(value, symbol_cat.domain)
 	end
 }
-option_handlers.ipv4only = {
+
+options.ipv4only = {
 	get = function (self, value)
-		return value == 1 
+		if value ~= nil then 
+			return value and value == 1 
+		else
+			return nil
+		end
 	end,
 	set = function (self, value)
 		return value and 1 or 0
 	end
 }
 
-option_handlers.sndtimeo = {
+options.sndtimeo = {
 	get = function (self, value)
-		return value > -1 and value or false
+		if value ~= nil then 
+			return value > -1 and value or false
+		else
+			return nil
+		end
 	end,
 	set = function (self, value)
 		return value or -1
@@ -47,13 +56,17 @@ option_handlers.sndtimeo = {
 }
 
 
-option_handlers.rcvtimeo = {
+options.rcvtimeo = {
 	get = function (self, value)
-		return value > -1 and value or false
+		if value ~= nil then 
+			return value > -1 and value or false
+		else
+			return nil
+		end
 	end,
 	set = function (self, value)
 		return value or -1
 	end
 }
 
-return option_handlers
+return options

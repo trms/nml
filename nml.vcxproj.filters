@@ -196,6 +196,9 @@
     <ClCompile Include="src\select.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
+    <ClCompile Include="src\FD_xx.cpp">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

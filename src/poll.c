@@ -83,6 +83,11 @@ int l_poll(lua_State* L)
 
 				lua_pop(L, 1);
 			}
+			// truncate the table
+			lua_pushnumber(L, i+1);
+			lua_pushnil(L);
+			lua_settable(L, -3);
+
 			// result + table
 			iRet = 2;
 		} else

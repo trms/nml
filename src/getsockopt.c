@@ -41,7 +41,7 @@ int l_getsockopt(lua_State* L)
 		szValueSize = NML_MAX_STR;
 
 		if(nn_getsockopt(socket, level, option, &iStr , &szValueSize) !=-1)
-			lua_pushlstring(L,(const char *) iStr, szValueSize - 1);
+			lua_pushlstring(L,(const char *) iStr, szValueSize); //we assume that no trailing nul is included in the nanomsg string.
 		else
 			lua_pushnil(L);
 		
