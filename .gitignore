@@ -21,7 +21,7 @@ ipch/**
 #don't ignore stuff in nuget folder.
 !/.nuget/**/*.*
 
-doc/**/*
+!doc/**/*
 ## Except in libriaries
 *.so
 *.so.*
