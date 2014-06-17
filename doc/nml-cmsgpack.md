@@ -22,7 +22,7 @@ In this example my_big_lua_table is a lua table. JSON:encode() is called which f
 
 The receive operation has a similar workflow:
 
-    soket --> nanomsg:["{my_big_lua_table}"] --> LUA:"{my_big_lua_table}" --> JSON:{my_big_lua_table}
+    socket --> nanomsg:["{my_big_lua_table}"] --> LUA:"{my_big_lua_table}" --> JSON:{my_big_lua_table}
 
 In this case nanomsg allocates a buffer to receive the incoming data. It then pushes the result to lua using pushlstring. JSON is then called to rebuild the original table.
 
@@ -30,6 +30,8 @@ In this case nanomsg allocates a buffer to receive the incoming data. It then pu
 
 There are some important aspects of MessagePack that we should be aware of.
 
+- I am currently basing my MessagePack assumptions on this binding: https://github.com/antirez/lua-cmsgpack
+- that MessagePack binding uses a BSD two clause license, I will probably need to update this project's license (MIT)
 - **MessagePack is Big Endian**, this may cause a performance issue when transferring larger data buffers across little endian systems. All of our MC components are little endian at the moment.
 - MessagePack encoding and decoding are two step processes. They both allocate a temporary internal buffer to store the encoded data, which is then pushed to lua as a string buffer.
 
@@ -122,10 +124,167 @@ MessagePack packs the data into a memory buffer that belongs to NML. This buffer
     
 **+**
 
-- The most efficient approach, only a single copy is necessary.
+- Very efficient approach, only a single copy is necessary.
 
 **-**
 
-- The lua workflow is different. MessagePack needs to parse the input lua table to extract the size. Then the lua layer needs to ask NML's C module for a buffer of the required size, and forward that buffer to MessagePack's packer api. 
 - Need the ability in MessagePack to identify the buffer size, without packing the data. Alternatively to speed up development we could pack the data into a temporary "recycled" memory area and just extract the size.
+- The lua workflow is different. MessagePack needs to parse the input lua table to extract the size. Then the lua layer needs to ask NML's C module for a buffer of the required size, and forward that buffer to MessagePack's packer api. 
 - MessagePack outputs userdata, its output is now opaque to lua.
+
+###5. Embed MessagePack into NML through NML's lua layer, and provide nanomsg's C low level memory management callbacks to MessagePack.
+
+(same drawing as #4)
+
+    ------------------------------------------------------------------
+    |  application      |                        NML                  |
+    |                   |---------------------------------|           |
+    |                   |         MessagePack             |           |     
+    {my_big_lua_table} --> MSGPACK:[{my_big_lua_table}] <--> nanomsg --> socket 
+    |                (lua types)                      (lua userdata)  |
+    -------------------------------------------------------------------
+
+This would require NML's lua layer to fetch the memory allocation callbacks from NML's C module. Then pass these callbacks to MessagePack. Both modules would need to remain in memory as long as they are referencing each other.
+
+
+**+**
+
+- The most efficient approach.
+
+**-**
+
+- Need to modify CMsgPack to support custom allocators.
+- Need the ability to pass C style callbacks between two lua C modules, through the lua api. 
+- Need to find an elegant way to implement this and not hack it through a backdoor.
+
+--- 
+
+#Implementation details
+The implementation effort is split between 3 areas: NML's C module, NML's lua layer and MessagePack.
+
+##NML's C module implementation details
+Here we need suport 
+
+###nml.allocmsg
+
+    local pv = nml.allocmsg(size)
+
+Allocates a nanomsg buffer to be used in zero-copy SP socket transfers.
+
+#####parameters
+
+size (number): the desired size in bytes.
+
+#####return values
+
+success:
+
+- [1]: ((light)userdata) the pointer to the allocated nanomsg memory buffer
+
+error:
+
+- [1]: nil
+- [2]: (string) a helpful description of the error
+
+#####remarks
+
+This is essentially a malloc of a custom nanomsg-defined structure, with the pointer being offset to obfuscate control data.
+
+---
+
+###nml.freemsg
+
+    nml.freemsg(pv)
+
+Frees a memory buffer previously allocated by nml.allocmsg.
+
+#####parameters
+
+pv ((light)userdata): a memory buffer allocated by nml.allocmsg
+
+#####return values
+
+success:
+
+- [1]: (number) 0
+
+error:
+
+- [1]: nil
+- [2]: (string): a helpful description of the error
+
+#####remarks
+
+The supplied pv will be offset to point to the control data. If the buffer passed in parameter is not a nanomsg buffer this method's behaviour is unknown.
+
+---
+
+###nml.send
+
+    nml.send(socket, buffer, flags, size)
+
+Sends a buffer to an SP socket.
+
+#####parameters
+
+- socket (number): the SP socket
+- buffer ((light)userdata or string): the buffer to send
+- flags (number): set to NN_DONTWAIT if non-blocking, or 0.
+- size (optional, number): the size in bytes, or the NN_MSG constant, or nil.
+
+#####return values
+
+success:
+
+- [1]: (number) 0
+
+error: 
+
+- [1]: nil
+- [2]: (string) a helpful description of the error
+
+#####remarks
+Set size to NN_MSG to send using the zero-copy mechanism.
+
+---
+
+###nml.recv
+
+     local pv, received = nml.recv(socket, flags, ud, size)
+
+Receives a message coming from an SP socket.
+
+#####parameters
+
+- socket (number): the SP socket.
+- flags (number): set to NN_DONTWAIT if non-blocking, or 0.
+- ud ((light)userdata): points to a (light)userdata, or nil. 
+- size (number): size in bytes, or NN_MSG, or nil.
+
+#####return values
+
+success:
+
+- [1]: ((light)userdata or string)the buffer
+- [2]: (number) the number of bytes written to the buffer
+
+error:
+
+- [1]: nil
+- [2]: (string) a helpful description of the error
+
+#####remarks
+If size is NN_MSG then pv will be set to a (light)userdata. This buffer can then be passed to the protocol decoder for processing. In this case the user needs to call nml.freemsg(pv) in order for the buffer to be properly released.
+
+If size is set to a value > 0, then the payload will be copied into the ud parameter. If the specified size is too small the payload will be truncated.
+
+If the size is nil (not specified), then pv will return the buffer inside a lua string.
+
+---
+
+###TODO: protocol negociation
+Both ends need to know what to expect. There is no mixing of protocols (regular strings vs MessagePack), otherwise I need to disambiguate them.
+
+---
+
+#TODO: estimation of the work
