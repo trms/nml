@@ -1,36 +1,6 @@
-
---[[-- common socket metheods
-TODO:
-    poll
-FINISHED:
-	send
-    recv
-	setsockopt 
-	socket 
-    strerror 
-    getsockopt
-    bind
-	connect 
-    shutdown
-    shutdown_all * shuts down all registered endpoints, local, remote or both (both if no arguments)
-    close
-    term
-    sleep
-
-NOT IMPORTING:
-    errno --wrapped in nml_error
-    symbolinfo --in nml.symbols
-    symbol --in nml.symbols
-    sendmsg --not implemented
-    recvmsg --not implemented
-    device --not implemented
-    cmsg 	--not implemented
-
-
-
---nml specific
-options --	field, returns a table of all options when indexed. 
-		--	when sets, looks for options and sets the socket to them.
+--[[---
+Nanomsg Binding for Lua
+@module nml
 
 --]]
 
@@ -70,6 +40,8 @@ for i, v in pairs(nml.symbol_cat.protocol) do
 	-- print('symbol_cat:', i)
 
 end
+
+
 setmetatable(nml, {
 	__index = function(self, index)
 		if self.symbol_cat.protocol[index] then
@@ -83,6 +55,47 @@ setmetatable(nml, {
 	end
 })
 
+---[[ Local poll testing
+
+-- print('poll', ts(nml.symbol_cat.rcvfd),  nml.sym)
+
+
+
+
+--]]
+
+
+local addr = "inproc://a"
+
+local sockets = {[1] = assert(nml.bus():bind(addr))}
+local receiver  = assert(nml.bus())
+for i = 2, 10 do
+	-- print("making socket", i)
+	sockets[i] = assert(nml.bus())
+	-- print("events = ", sockets[i].events)	
+end
+for i = 2, 7 do
+	-- print("making socket", i)
+	sockets[i].connect(sockets[i], addr)
+	-- print("events = ", sockets[i].events)	
+end
+
+for i = 5,10 do
+	-- print(sockets[i][1], sockets[i].core)
+	sockets[i].connect(sockets[i], "inproc://b")
+end
+
+assert(receiver:connect(addr))
+
+local b_receive = nml.bus():bind("inproc://b")
+
+sockets[6].send(sockets[1], "foo")
+
+local ready = nml.poll(sockets)
+print(#ready.recv, #ready.send)
+for i, v in ipairs(ready.recv) do
+	print('revent: ', i, v.fd)
+end
 
 --[[local testing
 -- pt("domain", symbol_cat.domain, symbol_cat.flag)
