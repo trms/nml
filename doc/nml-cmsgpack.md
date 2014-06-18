@@ -32,7 +32,7 @@ There are some important aspects of MessagePack that we should be aware of.
 
 - I am currently basing my MessagePack assumptions on this binding: https://github.com/antirez/lua-cmsgpack
 - that MessagePack binding uses a BSD two clause license, I will probably need to update this project's license (MIT)
-- **MessagePack is Big Endian**, this may cause a performance issue when transferring larger data buffers across little endian systems. All of our MC components are little endian at the moment.
+- **MessagePack is Big Endian**, but I'm copying the POD buffers using memcpy, not swapping the byte order since all of our MC components are little endian at the moment.
 - MessagePack encoding and decoding are two step processes. They both allocate a temporary internal buffer to store the encoded data, which is then pushed to lua as a string buffer.
 
 #solutions
@@ -146,7 +146,6 @@ MessagePack packs the data into a memory buffer that belongs to NML. This buffer
 
 This would require NML's lua layer to fetch the memory allocation callbacks from NML's C module. Then pass these callbacks to MessagePack. Both modules would need to remain in memory as long as they are referencing each other.
 
-
 **+**
 
 - The most efficient approach.
@@ -159,12 +158,91 @@ This would require NML's lua layer to fetch the memory allocation callbacks from
 
 --- 
 
-#Implementation details
-The implementation effort is split between 3 areas: NML's C module, NML's lua layer and MessagePack.
+#memory management callbacks implementation details
+###nml
+    nml.allocmsg, nml.freemsg, nml.reallocmsg
 
-##NML's C module implementation details
-Here we need suport 
+They're the equivalent to C's malloc, free, realloc, and will be added to the NML binding. No need to get into the details these are simple calls.
 
+###MessagePack
+We need to modify the C module to accept the above callbacks in its pack and unpack methods.
+The callbacks will always go through the lua layer before executing their C code, which will incur some overhead:
+
+    MessagePack --> Lua --> NML
+              (pcall)  
+
+Add a global singleton structure with the Lua state, and the memory management functions.
+
+    static struct MessagePack{
+        lua_State* L;
+        fn_malloc malloc;
+        fn_free free;
+        fn_realloc realloc;
+    }g_MessagePack;
+
+Add a global lua_State* accessible to the allocators. When pack/unpack is called, set the global pointers to point to malloc, realloc, free. Pack example:
+
+     static int mp_pack(lua_State* L)
+     {
+         // not a huge fan of this!
+         g_MessagePack.L = L;
+
+         // look for the allocators
+         if L(-1) is a table and the table contains the malloc, free, and realloc functions then
+             set the function pointers in g_MessagePack
+
+         ...
+
+         // we can't keep this context around
+         g_MessagePack.L = NULL;
+
+         // reset the malloc, realloc, free to point to the C default implementation
+     }
+
+Add a lua-based malloc, realloc and free functions. These need to pcall the specified lua function. Alloc example:
+    void* l_alloc(size_t size)
+    {
+       void* pv;
+       size_t len;
+
+       // this will execute code located in NML's C module
+       lua_pushinteger(size);
+       lua_call(g_L, 1, LUA_MULTRET);
+
+       pv = lua_tolstring(g_L, -1, &len);
+       assert(len==size);
+       return pv;
+    }
+
+Modify the MessagePack code to use the new memory allocation functions in g_MessagePack. Replace all malloc, free, realloc.
+
+###messagepack.pack(..., {malloc=fn1, realloc=fn2, free=fn3})
+if the stack's top parameter is a table, and the table contains a malloc function and a realloc function and a free function then
+- set the malloc, realloc, free global pointers to point to the specified callbacks.
+
+---
+
+#protocol disambiguation
+Protocol selection is dynamic (specified on every send, and returned on every receive). We'll use nanomsg's control data to send the protocol type.
+
+The protocol type will be specified as a string. Protocol disambiguation should be flexible, and not expect an exact, case sensitive string. This is handled at the lua level.
+
+For example the following protocol type strings should all be resolved to "MessagePack":
+
+- lua-cmessagepack
+- messagepack
+- lua-messagepack
+- msgpack
+- MessagePack
+etc...
+
+---
+
+#TODO: universal POD support in lua tables
+
+---
+
+#API
 ###nml.allocmsg
 
     local pv = nml.allocmsg(size)
@@ -221,9 +299,9 @@ The supplied pv will be offset to point to the control data. If the buffer passe
 
 ###nml.send
 
-    nml.send(socket, buffer, flags, size)
+    nml.send(socket, buffer, flags, size, protocol)
 
-Sends a buffer to an SP socket.
+Sends a buffer to an SP socket, using the specified protocol.
 
 #####parameters
 
@@ -231,9 +309,10 @@ Sends a buffer to an SP socket.
 - buffer ((light)userdata or string): the buffer to send
 - flags (number): set to NN_DONTWAIT if non-blocking, or 0.
 - size (optional, number): the size in bytes, or the NN_MSG constant, or nil.
+- protocol (optional, string): the protocol/encoder used to pack the buffer.
 
 #####return values
-
+    
 success:
 
 - [1]: (number) 0
@@ -246,13 +325,35 @@ error:
 #####remarks
 Set size to NN_MSG to send using the zero-copy mechanism.
 
+#####implementation
+If the buffer type is a string then
+- get lua string size
+- nn_allocmsg(lua_str_size)
+- copy the string into the buffer
+- nn_allocmsg the controldata (sizeof("string"))
+- copy "string" into control data
+
+If the buffer type is a userdata and the size is NN_MSG and the protocol is not nil then
+- fill the msghdr with the buffer and size (NN_MSG)
+- nn_allocmsg the control data (sizeof(protocol)) // the size of the string used to specify the protocol
+- copy the protocol string into the control data
+
+Else If the buffer type is a userdata and the size is > 0 and protocol is not nil then
+- nn_allocmsg(size)
+- copy the data into the buffer
+- nn_allocmsg(sizeof(protocol))
+- copy the protocol string into control data
+
+All success cases:
+- nn_sendmsg(msghdr, flags)
+
 ---
 
 ###nml.recv
 
-     local pv, received = nml.recv(socket, flags, ud, size)
+     local buf, received = nml.recv(socket, flags, ud, size)
 
-Receives a message coming from an SP socket.
+Receives a message coming from an SP socket and pushes it to lua as a string buffer.
 
 #####parameters
 
@@ -273,18 +374,16 @@ error:
 - [1]: nil
 - [2]: (string) a helpful description of the error
 
-#####remarks
-If size is NN_MSG then pv will be set to a (light)userdata. This buffer can then be passed to the protocol decoder for processing. In this case the user needs to call nml.freemsg(pv) in order for the buffer to be properly released.
-
-If size is set to a value > 0, then the payload will be copied into the ud parameter. If the specified size is too small the payload will be truncated.
-
-If the size is nil (not specified), then pv will return the buffer inside a lua string.
-
 ---
 
-###TODO: protocol negociation
-Both ends need to know what to expect. There is no mixing of protocols (regular strings vs MessagePack), otherwise I need to disambiguate them.
+#work breakdown
+Highest risk items first.
 
----
+1. Write MessagePack/NML memory allocation tests, using Pack/Unpack and passing malloc/realloc/free.
+2. Implement NML memory allocation binding. (needed for next)
+3. Implement MessagePack memory allocators.
+--> M1: allocators tested successfully
 
-#TODO: estimation of the work
+4. Write NML dynamic protocol selection tests, test JSON, MessagePack, strings.
+5. Implement NML dynamic protocol selection
+--> M2 dynamic protocols tested successfully.
