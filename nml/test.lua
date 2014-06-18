@@ -1,0 +1,1 @@
+for x,y in next,setmetatable({},{__index={1,2,3}}) do print(x,y) end
