@@ -1,10 +1,10 @@
-#NML MessagePack
+#1. NML MessagePack
 This document outlines the details of NML's MessagePack support.
 
-#Goal
+###1.1 Goal
 Provide an efficient, binary-compatible, seamless and extensible encoding and decoding mechanism as part of NML.
 
-#Current problem
+###1.2 Current problem
 The current messaging implementation relies on the MediaCircus/application layer to transform a message into a single string. This is a two step process that first uses a JSON parser to transform a lua table and its content into JSON representation. NML then sees the JSON table as a regular string type.
 
 This approach doesn't support plain old data (POD) buffers, typically represented by userdata or lightuserdata types. Those buffers get lost in the JSON processing. 
@@ -26,7 +26,7 @@ The receive operation has a similar workflow:
 
 In this case nanomsg allocates a buffer to receive the incoming data. It then pushes the result to lua using pushlstring. JSON is then called to rebuild the original table.
 
-###Notes on MessagePack
+###1.3 Notes on MessagePack
 
 There are some important aspects of MessagePack that we should be aware of.
 
@@ -34,14 +34,15 @@ There are some important aspects of MessagePack that we should be aware of.
 - that MessagePack binding uses a BSD two clause license, I will probably need to update this project's license (MIT)
 - **MessagePack is Big Endian**, but I'm copying the POD buffers using memcpy, not swapping the byte order since all of our MC components are little endian at the moment.
 - MessagePack encoding and decoding are two step processes. They both allocate a temporary internal buffer to store the encoded data, which is then pushed to lua as a string buffer.
+- MessagePack will need to be updated to handle our way of serializing binary data (lua userdata).
 
-#solutions
+#2. solutions
 
 I propose that MessagePack remains an independent C module with a lua binding. It will be made into a NuGet that can be imported by NML and any other modules requiring lua C MessagePack support. This means that buffers still need to be exposed in lua. Possible ways to handle this situation are detailed below; 
 
 Note: I'm going to refer to the layer on top of NML as "the application" for simplicity.
 
-###1. Use MessagePack at the application level, by swapping out the JSON encoding. 
+###2.1. Use MessagePack at the application level, by swapping out the JSON encoding. 
 The application will transform the lua types, including userdata, through MessagePack.
 
     ---------------------------------------------------------------------------------------------
@@ -63,7 +64,7 @@ Similarly to JSON, MessagePack outputs its encoded buffer as a string. The strin
 - Number of times the original data is present in memory: 3+1 (MessagePack temp buffer).
 - No benefits in terms of efficiency.
 
-###2. Embed MessagePack into NML through NML's Lua layer, without modifying MessagePack.
+###2.2 Embed MessagePack into NML through NML's Lua layer, without modifying MessagePack.
 
 Sending data: NML's entry points accept regular lua types, including userdata types. The application sends lua types directly to NML's api (numbers, strings, tables...). NML's lua layer then forwards the lua data to the desired protocol encoder (MessagePack), which encodes the lua data into a lua string buffer. NML's lua layer then passes the resulting string buffer to NML's C module.
 
@@ -87,7 +88,7 @@ Sending data: NML's entry points accept regular lua types, including userdata ty
 - Number of times the original data is present in memory: 3+1.
 - No benefits in terms of efficiency.
 
-###3. Embed MessagePack into NML through NML's lua layer, and modify MessagePack to output a recycled userdata buffer.
+###2.3 Embed MessagePack into NML through NML's lua layer, and modify MessagePack to output a recycled userdata buffer.
 
 This goes a step further than point 2 above. MessagePack is still embedded into NML, but it no longer copies its packed buffer into a lua string buffer, saving a buffer copy. MessagePack exports its packed buffer as userdata, which is then read directly by nanomsg. 
 
@@ -110,7 +111,7 @@ This goes a step further than point 2 above. MessagePack is still embedded into 
 - The MessagePack buffer is still copied by NML.
 - MessagePack output userdata is now opaque to lua.
 
-###4. Embed MessagePack into NML through NML's lua layer, and leverage NML's buffer management api.
+###2.4 Embed MessagePack into NML through NML's lua layer, and leverage NML's buffer management api.
 
 MessagePack packs the data into a memory buffer that belongs to NML. This buffer is then sent over the SP socket through a zero-copy mechanism. 
 
@@ -132,7 +133,7 @@ MessagePack packs the data into a memory buffer that belongs to NML. This buffer
 - The lua workflow is different. MessagePack needs to parse the input lua table to extract the size. Then the lua layer needs to ask NML's C module for a buffer of the required size, and forward that buffer to MessagePack's packer api. 
 - MessagePack outputs userdata, its output is now opaque to lua.
 
-###5. Embed MessagePack into NML through NML's lua layer, and provide nanomsg's C low level memory management callbacks to MessagePack.
+###2.5 Embed MessagePack into NML through NML's lua layer, and provide nanomsg's C low level memory management callbacks to MessagePack.
 
 (same drawing as #4)
 
@@ -158,13 +159,13 @@ This would require NML's lua layer to fetch the memory allocation callbacks from
 
 --- 
 
-#memory management callbacks implementation details
-###nml
+#3. memory management callbacks implementation details
+###3.1 nml
     nml.allocmsg, nml.freemsg, nml.reallocmsg
 
 They're the equivalent to C's malloc, free, realloc, and will be added to the NML binding. No need to get into the details these are simple calls.
 
-###MessagePack
+###3.2 MessagePack
 We need to modify the C module to accept the above callbacks in its pack and unpack methods.
 The callbacks will always go through the lua layer before executing their C code, which will incur some overhead:
 
@@ -216,13 +217,30 @@ Add a lua-based malloc, realloc and free functions. These need to pcall the spec
 
 Modify the MessagePack code to use the new memory allocation functions in g_MessagePack. Replace all malloc, free, realloc.
 
-###messagepack.pack(..., {malloc=fn1, realloc=fn2, free=fn3})
+###3.3 messagepack.pack(..., {malloc=fn1, realloc=fn2, free=fn3})
 if the stack's top parameter is a table, and the table contains a malloc function and a realloc function and a free function then
 - set the malloc, realloc, free global pointers to point to the specified callbacks.
 
 ---
 
-#protocol disambiguation
+#4. Binary serialization
+We need the ability to serialize lua (light)userdata (ud).
+The problem with ud is that we don't know its size, there's no standard mechanism to determine the size of the data pointed to by a ud payload.
+
+We'll implement our own custom payload package. This package will specify a buffer (ud), the buffer type as a string and its size: 
+
+    { buffer = <some_userdata_value>, buffer_ud_type = "dsx_filter_buffer", buffer_ud_size = <the_size> }
+
+This binary serialization representation will be universal across all MC modules.
+
+###4.1 MessagePack binary serialization
+In messagepack.pack:
+- if the type is a table then parse the table for the "buffer=", "buffer_ud_type=", "buffer_ud_size="" fields. 
+-- if found then encode the specified buffer as a binary format. Preserve the table.
+TODO: continue here...
+---
+
+#5. protocol disambiguation
 Protocol selection is dynamic (specified on every send, and returned on every receive). We'll use nanomsg's control data to send the protocol type.
 
 The protocol type will be specified as a string. Protocol disambiguation should be flexible, and not expect an exact, case sensitive string. This is handled at the lua level.
@@ -238,12 +256,8 @@ etc...
 
 ---
 
-#TODO: universal POD support in lua tables
-
----
-
-#API
-###nml.allocmsg
+#6. API
+###6.1 nml.allocmsg
 
     local pv = nml.allocmsg(size)
 
@@ -270,7 +284,7 @@ This is essentially a malloc of a custom nanomsg-defined structure, with the poi
 
 ---
 
-###nml.freemsg
+###6.2 nml.freemsg
 
     nml.freemsg(pv)
 
@@ -297,7 +311,7 @@ The supplied pv will be offset to point to the control data. If the buffer passe
 
 ---
 
-###nml.send
+###6.3 nml.send
 
     nml.send(socket, buffer, flags, size, protocol)
 
@@ -349,7 +363,7 @@ All success cases:
 
 ---
 
-###nml.recv
+###6.4 nml.recv
 
      local buf, received = nml.recv(socket, flags, ud, size)
 
@@ -376,14 +390,20 @@ error:
 
 ---
 
-#work breakdown
-Highest risk items first.
+#7. work breakdown
 
-1. Write MessagePack/NML memory allocation tests, using Pack/Unpack and passing malloc/realloc/free.
-2. Implement NML memory allocation binding. (needed for next)
-3. Implement MessagePack memory allocators.
---> M1: allocators tested successfully
+
+1. Write binary serialization tests for cmsgpack.
+2. Implement binary serialization in cmsgpack.
+--> M1: binary serialization tested successfully
+
+3. Write MessagePack/NML memory allocation tests, using Pack/Unpack and passing malloc/realloc/free.
+4. Implement NML memory allocation binding. (needed for next)
+5. Implement MessagePack memory allocators.
+--> M2: allocators tested successfully
+--> M3: cmsgpack code complete
 
 4. Write NML dynamic protocol selection tests, test JSON, MessagePack, strings.
 5. Implement NML dynamic protocol selection
 --> M2 dynamic protocols tested successfully.
+--> RC1 all modules code complete
