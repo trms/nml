@@ -85,6 +85,11 @@ for i, v in pairs(symbols) do
 
 	end
 end
+local NN_POLLIN = 1 --nml.sym.NN_POLLIN.value
+local NN_POLLOUT = 2 --nml.sym.NN_POLLOUT.value
 
+symbols.NN_POLLIN = {value = 1}
+symbols.NN_POLLOUT = {value = 2}
+symbol_cat.poll = { recv = {value = 1}, send = {value = 2}}
 
 return {symbols = symbols, symbol_cat = symbol_cat}
