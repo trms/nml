@@ -1,6 +1,6 @@
 -- taken from nanomsg's reqrep.c
 local busted = require("busted")
-local nml = require'nml'
+local nml = require'nml'.core
 
 local sym = {AF_SP=-1, NN_REQ=-1}
 local s
@@ -27,24 +27,20 @@ describe("shutdown tests", function()
 	it("creates a REQ socket", function()
 		s = nml.socket (sym.AF_SP, sym.NN_REQ)
 		assert.is_truthy(s)
-		assert.are_not_equal(-1, s)
 	end)
 
 	it("connects to the socket", function()
 		eid = nml.connect(s, "tcp://127.0.0.1:5590")
 		assert.is_truthy(eid)
-		assert.are_not_equal(-1, eid)
 	end)
 
 	it("removes the end point from the socket", function()
 		rc = nml.shutdown (s, eid)
-		assert.is_truthy(rc)
-		assert.are_equal(0, rc)
+		assert.is_true(rc)
 	end)
 
 	it("closes the socket", function()
 		rc = nml.close(s)
-		assert.is_truthy(rc)
-		assert.are_equal(0, rc)
+		assert.is_true(rc)
 	end)
 end)

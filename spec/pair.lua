@@ -4,12 +4,14 @@ local pw = require'pl.pretty'.write
 
 -- print('package', package.path)
 -- print("sym is a "..pw(nml.sym))
-local AF_SP = nml.sym.AF_SP.value
-local NN_PAIR = nml.sym.NN_PAIR.value
-local NN_DONTWAIT = nml.sym.NN_DONTWAIT.value
+local AF_SP = nml.symbols.AF_SP.value
+local NN_PAIR = nml.symbols.NN_PAIR.value
+local NN_DONTWAIT = nml.symbols.NN_DONTWAIT.value
 local SOCKET_ADDRESS = "inproc://a"
 local sb
 local sc
+
+nml = nml.core
 
 describe("test NN_PAIR #NN_PAIR", function()
 	it("creates a first NN_PAIR socket", function()
@@ -37,8 +39,9 @@ describe("test NN_PAIR #NN_PAIR", function()
 	end)
 
 	it("sb receives the message", function()
-		local result, message = nml.recv (sb, NN_DONTWAIT)
-		assert.are_not_equal(-1, result)
+		local message = nml.recv (sb, NN_DONTWAIT)
+	
+		assert.not_nil( message)
 		assert.are_equal("ABC", message)
 	end)
 	
@@ -47,8 +50,8 @@ describe("test NN_PAIR #NN_PAIR", function()
 	end)
 
 	it("sc receives the message", function()
-		local result, message = nml.recv (sc, NN_DONTWAIT)
-		assert.are_not_equal(-1, result)
+		local message = nml.recv (sc, NN_DONTWAIT)
+		assert.not_nil(message)
 		assert.are_equal("DEF", message)
 	end)
 	

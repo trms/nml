@@ -3,16 +3,18 @@ local nml=require'nml'
 --local pw=require'pl.pretty'.write
 require'busted'
 
-local AF_SP = nml.sym.AF_SP.value
-local NN_PAIR = nml.sym.NN_PAIR.value
-local NN_DONTWAIT = nml.sym.NN_DONTWAIT.value
+local AF_SP = nml.symbols.AF_SP.value
+local NN_PAIR = nml.symbols.NN_PAIR.value
+local NN_DONTWAIT = nml.symbols.NN_DONTWAIT.value
 local NN_POLLIN = 1 -- nml.sym.NN_POLLIN.value
 local NN_POLLOUT = 2 -- nml.sym.NN_POLLOUT.value
 local SOCKET_ADDRESS = "inproc://a"
-local NN_RCVFD = nml.sym.NN_RCVFD.value
-local NN_SNDFD = nml.sym.NN_SNDFD.value
-local NN_SOL_SOCKET = nml.sym.NN_SOL_SOCKET.value
-local ETERM = nml.sym.ETERM.value
+local NN_RCVFD = nml.symbols.NN_RCVFD.value
+local NN_SNDFD = nml.symbols.NN_SNDFD.value
+local NN_SOL_SOCKET = nml.symbols.NN_SOL_SOCKET.value
+local ETERM = nml.symbols.ETERM.value
+
+nml = nml.core
 
 local routine1 = [[
 	local SOCKET_ADDRESS = ]]..SOCKET_ADDRESS..[[
@@ -40,15 +42,15 @@ local getevents = function(s, events, timeout)
 	local revents;
 
     if events & NN_IN == NN_IN then
-        rc, rcvfd = nml.getsockopt(s, NN_SOL_SOCKET, NN_RCVFD)
-		print("IN FD is "..rcvfd)
-        assert(rc~=-1)
+        rcvfd = nml.getsockopt(s, NN_SOL_SOCKET, NN_RCVFD)
+		print("IN FD is:", rcvfd)
+        assert(rcvfd)
 		pollset = nml.FD_SET(rcvfd, pollset)
 	end 
 
     if events & NN_OUT == NN_OUT then
-        rc, sndfd = nml.getsockopt(s, NN_SOL_SOCKET, NN_SNDFD)
-        assert(rc == 0)
+        sndfd = nml.getsockopt(s, NN_SOL_SOCKET, NN_SNDFD)
+        assert(sndfd)
 		pollset = nml.FD_SET(sndfd, pollset)
     end
 
@@ -92,18 +94,18 @@ describe("Poll tests #poll", function()
 	it("creates a pair", function()
 		sb = nml.socket(AF_SP, NN_PAIR)
 		assert.is_truthy(sb)
-		assert.are_not_equal(-1, sb)
+		assert.is_not_falsy(sb)
 	end)
 	it("binds to a socket", function()
-		assert.are_not_equal(-1, nml.bind(sb, SOCKET_ADDRESS))
+		assert.is_not_falsy(nml.bind(sb, SOCKET_ADDRESS))
 	end)
 	it("creates a second pair", function()
 		sc = nml.socket(AF_SP, NN_PAIR)
 		assert.is_truthy(sc)
-		assert.are_not_equal(-1, sc)
+		assert.is_not_falsy(sc)
 	end)
 	it("connects to the pair", function()
-		assert.are_not_equal(-1, nml.connect(sc, SOCKET_ADDRESS))
+		assert.is_not_falsy(nml.connect(sc, SOCKET_ADDRESS))
 	end)
 
 	--print(("sb:[%d], sc:[%d], IN:[%d], out:[%d]"):format(sb, sc, NN_POLLIN, NN_POLLOUT))
@@ -119,7 +121,7 @@ describe("Poll tests #poll", function()
 	end)
 	it("sends ABC to sc", function()
 		-- sc sends "ABC"
-		assert.are_not_equal(-1, nml.send(sc, "ABC", NN_DONTWAIT))
+		assert.is_not_falsy(nml.send(sc, "ABC", NN_DONTWAIT))
 		nml.sleep(100)
 	end)
 	it("sb=IN|OUT, sc=OUT", function()
@@ -130,10 +132,9 @@ describe("Poll tests #poll", function()
 		assert.are_equal(NN_POLLOUT, pfd[2].revents)
 	end)
 	it("sb recv the message", function()
-		rc, msg = nml.recv(sb, NN_DONTWAIT)
-		assert.is_truthy(rc)
+		msg = nml.recv(sb, NN_DONTWAIT)
+		assert.is_truthy(msg)
 		assert.are_equal("ABC", msg)
-		assert.are_not_equal(-1, rc)
 	end)
 	it("sb=OUT, sc=OUT #2", function()
 		rc, pfd = nml.poll(pfd, 2, 10)
