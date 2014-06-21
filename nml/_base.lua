@@ -5,15 +5,13 @@
 local nml = require'nml.symbols' --symbols and symbol_cat
 nml.core = require'nml.core'
 nml.options = require'nml.options'
+local events = require'nml.events'
 nml.sym = nml.symbols
 
 local def_option_level = assert(nml.symbol_cat.option_level.sol_socket.value, "There is a default socket level.")
 
-local events = {
-	[nml.symbol_cat.poll.send.value] = "send", send = nml.symbol_cat.poll.send.value,
-	[nml.symbol_cat.poll.recv.value] = "recv", recv = nml.symbol_cat.poll.recv.value,
-	
-}
+
+
 events[events.send | events.recv] = "both" 
 events.both = events.send | events.recv
 
@@ -195,46 +193,11 @@ function nml:recv (dontwait)
 
 end
 
-function nml.poll (...)
-	local timeout
-	local fds, count, ready
-	
-	if  select("#", ...) > 1 then
-		fds = { ... }
-	elseif type(...) == "table" then --assume a sequence was passed in first 
-		fds = (...)
-	else
-		error(("nml error: Expected a sequence of sockets to poll. Received '%s'"):format(type((...))) )
-	end
+nml.poll= require'nml.poll'.poll
+nml.poll_coroutine = require'nml.poll'.poll_coroutine
 
-	if type(fds[#fds]) == "number" then
-		timeout =  fds[#fds] 
-		fds[#fds] = nil
-	else
-		timeout = 0
-	end
-	if #fds > 0 then
 
-		count, fds = nml.core.poll(fds,#fds, timeout)
 
-		if count > 0 then
-			ready = {send = {}, recv = {}}
-
-			for i, s in ipairs(fds) do
-
-				if (events.send & s.revents) > 0 then
-					ready.send[#ready.send + 1] = s
-				end
-				if (events.recv & s.revents) > 0 then
-					ready.recv[#ready.recv + 1] = s
-				end
-				s.revents = nil
-			end
-			return ready
-		end
-	end
-
-end
 
 function nml:shutdown_all(where)
 	if not self[1] then return nil, self:nml_error("No socket.") end
