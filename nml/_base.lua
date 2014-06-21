@@ -9,6 +9,14 @@ nml.sym = nml.symbols
 
 local def_option_level = assert(nml.symbol_cat.option_level.sol_socket.value, "There is a default socket level.")
 
+local events = {
+	[nml.symbol_cat.poll.send.value] = "send", send = nml.symbol_cat.poll.send.value,
+	[nml.symbol_cat.poll.recv.value] = "recv", recv = nml.symbol_cat.poll.recv.value,
+	
+}
+events[events.send | events.recv] = "both" 
+events.both = events.send | events.recv
+
 do
 	local errno, strerror = assert(nml.core.errno, "There is an errno function in nml.core"), assert(nml.core.strerror, "There is an strerr function in nml.core.")
 	local ETERM = nml.symbol_cat.error.eterm.value
@@ -161,13 +169,7 @@ we may want to add the ability to process messages using a serializer/deserializ
 we could provide a documented way to write a C handler for messages and we'd be able to use
 zero copy to do it.
 --]]
-local events = {
-	[nml.symbol_cat.poll.send.value] = "send", send = nml.symbol_cat.poll.send.value,
-	[nml.symbol_cat.poll.recv.value] = "recv", recv = nml.symbol_cat.poll.recv.value,
-	
-}
-events[events.send | events.recv] = "both" 
-events.both = events.send | events.recv
+
 
 function nml:send (msg, dontwait)
 	if not self[1] then return nil, self:nml_error("No socket.") end
