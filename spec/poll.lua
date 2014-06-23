@@ -1,5 +1,6 @@
 --local llthreads = require'llthreads'
 local nml=require'nml'
+local events = require'nml.events'
 --local pw=require'pl.pretty'.write
 require'busted'
 
@@ -39,20 +40,20 @@ describe("Poll tests #poll", function()
 		}
 		
 		count, sockets = nml.poll(sockets, 10)
-		assert.are_equal(NN_POLLOUT, sockets[1].revents)
-		assert.are_equal(NN_POLLOUT, sockets[2].revents)
+		assert.are_equal(events.send, sockets[1].revents)
+		assert.are_equal(events.send, sockets[2].revents)
 	end)
 	it("sends ABC to pair_2", function()
 		-- pair_2 sends "ABC"
 		assert.is_not_falsy(nml.send(pair_2, "ABC", NN_DONTWAIT))
-		nml.sleep(100)
+		nml.core.sleep(100)
 	end)
 	it("pair_1=IN|OUT, pair_2=OUT", function()
-		count, pfd = nml.poll(pfd, 2, 10)
-		--print(("2- poll called. pfd:[%s]"):format(pw(pfd)))
+		count, sockets = nml.poll(sockets, 2, 10)
+		--print(("2- poll called. sockets:[%s]"):format(pw(sockets)))
 		-- pair_1 can process "ABC"
-		assert.are_equal(NN_POLLIN|NN_POLLOUT, pfd[1].revents)
-		assert.are_equal(NN_POLLOUT, pfd[2].revents)
+		assert.are_equal(events.send |events.recv, sockets[1].revents)
+		assert.are_equal(events.send , sockets[2].revents)
 	end)
 	it("pair_1 recv the message", function()
 		msg = nml.recv(pair_1, NN_DONTWAIT)
@@ -60,15 +61,15 @@ describe("Poll tests #poll", function()
 		assert.are_equal("ABC", msg)
 	end)
 	it("pair_1=OUT, pair_2=OUT #2", function()
-		count, pfd = nml.poll(pfd, 2, 10)
+		count, sockets = nml.poll(sockets, 2, 10)
 		assert.is_truthy(count)
-		assert.are_equal(NN_POLLOUT, pfd[1].revents)
-		assert.are_equal(NN_POLLOUT, pfd[2].revents)
+		assert.are_equal(events.send, sockets[1].revents)
+		assert.are_equal(events.send, sockets[2].revents)
 	end)
 	
 -- /*  Clean up. */
 	it("closes the sockets", function()
-		nml.close(pair_2)
-		nml.close(pair_1)
+		assert.is_truthy(nml.close(pair_2))
+		assert.is_truthy(nml.close(pair_1))
 	end)
 end)

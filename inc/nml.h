@@ -135,6 +135,12 @@ int l_term(lua_State* L);
 static const TCHAR g_achenv[] = _T("env");
 int l_env(lua_State* L);
 
+typedef struct nml_msg { 
+	void * message;
+	size_t size; 
+} nml_msg;
+
+const char * NML_MSG_META_NAME = "nml_msg";
 //////////////////////////////////////////////////////////////////////////
 
 typedef struct SnmlApi{

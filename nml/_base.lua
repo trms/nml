@@ -10,29 +10,13 @@ nml.sym = nml.symbols
 
 local def_option_level = assert(nml.symbol_cat.option_level.sol_socket.value, "There is a default socket level.")
 
+local POLL_SEND = assert(nml.symbol_cat.poll.send.value)
+local POLL_RECV = assert(nml.symbol_cat.poll.recv.value)
 
 
-events[events.send | events.recv] = "both" 
-events.both = events.send | events.recv
 
-do
-	local errno, strerror = assert(nml.core.errno, "There is an errno function in nml.core"), assert(nml.core.strerror, "There is an strerr function in nml.core.")
-	local ETERM = nml.symbol_cat.error.eterm.value
-	function nml:nml_error(n)
-		n = n or errno()
-		if type(n) == "string" then
-			return n
-		elseif n ~= 0 then
-			if n == ETERM and self[1] then
-				self:close()
-			end
 
-			return ("nanomsg error[%d]: %s"):format(n, strerror(n)), n
-		else
-			return nil
-		end
-	end
-end
+nml.nml_error = require'nml.error'
 
 local socket_mt = {}
 
@@ -64,13 +48,11 @@ function socket_mt:__newindex(index, value)
 			self:setsockopt(index, value)
 	elseif index == "events" then
 		if value =="send" then
-			rawset(self, "_events", _self.sybmol_cat.poll.send)
+			rawset(self, "_events", POLL_SEND)
 		elseif value == "recv" then
-			rawset(self, "_events", _self.sybmol_cat.poll.recv)
+			rawset(self, "_events", POLL_RECV)
 		elseif value == "both" then
-			rawset(self, "_events", 
-				_self.sybmol_cat.poll.recv |  _self.sybmol_cat.poll.send
-			)
+			rawset(self, "_events", POLL_SEND |  POLL_RECV)
 		elseif not value then
 			rawset(self, "_events", 0)
 		elseif type(value) == "number" then
@@ -247,10 +229,10 @@ function nml:close ()
 	end
 end
 function nml:term ()
-	self.core.term()
+	nml.core.term()
 	--term is library wide, so we do not need to have a socket in order to call it.
 	--therefore, only close if we have a socket.
-	if self[1] then
+	if self and self[1] then
 		return self:close()
 	else
 		return true

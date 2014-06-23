@@ -86,7 +86,7 @@ local b_receive = nml.bus():bind("inproc://b")
 
 sockets[6].send(sockets[1], "foo")
 
-local ready = nml.poll(sockets)
+local count, ready = nml.poll(sockets)
 print(#ready.recv, #ready.send)
 for i, v in ipairs(ready.recv) do
 	print('revent: ', i, v.fd)

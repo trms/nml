@@ -445,12 +445,12 @@
     <LuaTests Include="$(SolutionDir)spec\*" />
   </ItemGroup>
   <ItemGroup>
-    <LuaSource Include="$(SolutionDir)nml\*" />
+    <LuaSource Include="$(SolutionDir)nml\**\*.*" />
   </ItemGroup>
   <Target Name="AfterBuild" AfterTargets="Build">
     <Delete Files="$(OutDir)$(TargetName).ilk;$(OutDir)$(TargetName).exp" />
     <Delete Files="$(OutDir)$(TargetName).lib" />
-    <Copy SourceFiles="@(LuaSource)" DestinationFolder="$(OutDir)$(ProjectName)\" />
+    <Copy SourceFiles="@(LuaSource)" DestinationFiles="@(LuaSource->'$(OutDir)$(ProjectName)\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Move SourceFiles="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).pdb" DestinationFolder="$(OutDir)$(ProjectName)\" />
     <Copy SourceFiles="@(LuaTests)" DestinationFolder="$(OutDir)spec\" />
   </Target>

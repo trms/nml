@@ -1,6 +1,6 @@
 local events = require'nml.events'
 local poll = require'nml.core'.poll
-
+local nml_error = require'nml.error'
 local nml = {}
 
 function nml:poll (sockets, timeout)
@@ -33,7 +33,10 @@ function nml:poll (sockets, timeout)
 
 	if #sockets > 0 then
 		count, res = poll(sockets, timeout)
-		if not count then return count, sockets, res end --res will be error message
+
+		if not count then 
+			return count, sockets, nml_error() 
+		end --res will be error message
 		assert(res == sockets, "The table is recycled.")
 		if count > 0 then
 			for i, s in ipairs(sockets) do
@@ -43,7 +46,7 @@ function nml:poll (sockets, timeout)
 				if (events.recv & s.revents) > 0 then
 					sockets.recv[#sockets.recv + 1] = s
 				end
-		
+
 				-- s.revents = nil
 			end
 			

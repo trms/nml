@@ -21,13 +21,45 @@
 */
 
 #include "nml.h"
+struct nn_pollfd_b {
+	int fd;
+	short events;
+	short revents;
+	};
+int safe_getint( lua_State * L, const char * field_name,  struct nn_pollfd * polls) 
+{
+	int val;
+	//BAD BAD BAD
+	//TODO: getfield can error on __index. We should fix this!
+	lua_getfield(L, -1, field_name);
+	//lua_pushstring(L, field_name);
+	//lua_rawget(L, -2); //rawget this. we can't do errors here.
+
+	if (lua_isinteger(L, -1)) {
+		val = (int) lua_tointeger(L, -1);
+		lua_pop(L, 1);
+		return val;
+	}
+	else {
+		free(polls);
+		//lua_error causes a longjump. so we won't free twice.
+		return luaL_error(L, "Expected and integer in field '%s'. Received %s.", field_name, luaL_typename(L, -1));
+	}
+
+}
+
+//void setint(lua_State *L, const char *field_name, int val, nn_pollfd *polls ){
+void safe_setint(lua_State *L, const char *field_name, int val){
+	lua_pushinteger(L, val);
+	lua_setfield(L, -2, field_name); //rawget this. we can't do errors here.
+}
 
 // poll a set of SP sockets for readability and/or writability
 // http://nanomsg.org/v0.3/nn_poll.3.html
 int l_poll(lua_State* L)
 {
-	int iLen, i, iRet;
-	struct nn_pollfd* polls;
+	int iLen, i, iRet, time_out, count;
+	struct nn_pollfd * polls;
 
 	/*
 	struct nn_pollfd {
@@ -36,65 +68,67 @@ int l_poll(lua_State* L)
 		short revents;
 		};
 	*/
-	luaL_checktype(L, P1, LUA_TTABLE); // events table
-	luaL_checkint(L, P2); // timeout
+	luaL_checktype(L, 1, LUA_TTABLE); // events table
+	time_out = luaL_checkint(L, P2); // timeout
+	lua_settop(L, 1);
 
 	// {{}, {}, ...}
-	iLen = (int)luaL_len(L, P1);
-	
-	// malloc the buffer
-	polls = malloc(sizeof(struct nn_pollfd)*iLen);
-	
-	if (polls!=NULL) {
-		for (i=0; i<iLen; i++) {
-			// next element
-			lua_pushinteger(L, i+1);
-			lua_gettable(L, 1);
+	iLen = (int)luaL_len(L, 1);
 
-			if (lua_type(L, -1)==LUA_TTABLE) {
-				// the socket
-				lua_pushstring(L, "fd");
-				lua_gettable(L, -2);
-				polls[i].fd = luaL_checkint(L, -1);
-				lua_pop(L, 1);
-				
-				// the events
-				lua_pushstring(L, "events");
-				lua_gettable(L, -2);
-				polls[i].events = (short)luaL_checkint(L, -1);
-				lua_pop(L, 1);
-			}
-			lua_pop(L, 1);
-		}
-
-		// call nn
-		lua_pushinteger(L, nn_poll(polls, iLen, (int)lua_tointeger(L, P3)));
-		if (lua_tointeger(L, -1)!=-1) {
-			// reuse the return table
-			lua_pushvalue(L, 1);
+	if( iLen == 0) {
+		lua_pushinteger(L, iLen);
+		lua_pushvalue(L, 1);
+		iRet = 2;
+	} else {
+	
+		// malloc the buffer
+		polls = (struct nn_pollfd *) malloc(sizeof(struct nn_pollfd)*iLen);
+	
+		if (polls!=NULL) {
 			for (i=0; i<iLen; i++) {
 				// next element
-				lua_pushinteger(L, i+1);
-				lua_gettable(L, -2);
+				lua_rawgeti(L, 1, i + 1);
 
-				lua_pushstring(L, "revents");
-				lua_pushinteger(L, polls[i].revents);
-				lua_settable(L, -3);
-
+				if (lua_type(L, -1)==LUA_TTABLE) {
+					// the socket
+					polls[i].fd = safe_getint(L, "fd", polls);		
+					// the events
+					polls[i].events = (short) safe_getint(L, "events", polls);
+				} else {
+					free(polls);
+					luaL_error(L, "Expected a table at the index %d", i +1);
+				}
+				// pop the socket table.
 				lua_pop(L, 1);
+			} 
+
+			// call nn, push the number of activated sockets
+			count =  nn_poll(polls, iLen, time_out);
+			
+			if (count != -1) {
+				//table is still at top.
+				for (i=0; i<iLen; i++) {
+					// next element
+					lua_rawgeti(L, 1, i + 1);
+					safe_setint(L, "revents", polls[i].revents);
+					lua_pop(L, 1);
+				}
+				// truncate the table
+				// lua_pushnumber(L, i+1); //what?
+				// lua_pushnil(L);
+				// lua_settable(L, -3);
+				lua_pushinteger(L, count);
+				lua_insert(L, 1);
+				// count, table
+				iRet = 2;
+			} else {
+				lua_pushnil(L);
+				iRet = 1; //nml errord. so, we'll let nml figure out the error number.
 			}
-			// truncate the table
-			lua_pushnumber(L, i+1);
-			lua_pushnil(L);
-			lua_settable(L, -3);
 
-			// result + table
-			iRet = 2;
-		} else
-			iRet = 1;
-
-		// free the mem
-		free(polls);
+			// free the mem
+			free(polls);
+		}
 	}
 	return iRet;
 }
