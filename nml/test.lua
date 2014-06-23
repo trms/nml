@@ -42,5 +42,3 @@ pair_2.events = "recv"
 print("Events are now:", pair_1.events, pair_2.events)
 local ready, sockets,  err = poll_check(sockets, 500)
 local ready, sockets,  err = poll_check(sockets, 10)
-
-
