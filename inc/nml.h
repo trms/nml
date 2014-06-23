@@ -140,7 +140,6 @@ typedef struct nml_msg {
 	size_t size; 
 } nml_msg;
 
-const char * NML_MSG_META_NAME = "nml_msg";
 //////////////////////////////////////////////////////////////////////////
 
 typedef struct SnmlApi{
