@@ -11,12 +11,25 @@ This approach doesn't support plain old data (POD) buffers, typically represente
 
 It is also not the most efficient, as the buffer needs to be copied on every step. Here is a typical send operation:
 
-    ------------------------------------------------------------------------------------------
-    |    application    |          JSON                 |          NML                       |
-    {my_big_lua_table} --> JSON:"[{my_big_lua_table}]" --> nanomsg:["[{my_big_lua_table}]"] --> socket
-    |                (lua_types)                    (lua string)                             |
-    ------------------------------------------------------------------------------------------
-    
++---------------+    1.{lua_table}    +---------------+                                 
+|               +-------------------> |               |                                 
+|               |                     |    JSON       |                                 
+|  Application  |                     |     Lua       |                                 
+|      Lua      |   2."[{lua_tablee}]"|               |                                 
+|               | <-------------------+               |                                 
++-------+-------+                     +---------------+                                 
+        |                                                                   socket      
+        |                                                                      ^        
+        | 3."[{lua_tablee}]"                                                   |        
+        v                                                                      |        
+                                                                               |        
++---------------+                  +---------------+                   +-------+-------+
+|               |                  |               |                   |               |
+|               | 4."[{lua_table}]"|               | 5."[{lua_table}]" |    nanomsg    |
+|    NML Lua    +----------------> |    NML C      +-----------------> |     (dll)     |
+|               |                  |               |                   |               |
+|               |                  |               |                   |               |
++---------------+                  +---------------+                   +---------------+
 
 In this example my_big_lua_table is a lua table. JSON:encode() is called which formats the table into a JSON string. NML:send() is called with the JSON string, which is then copied into a nanomsg buffer and sent over the socket. The data is thus represented 3 times in memory.
 
@@ -44,12 +57,32 @@ Note: I'm going to refer to the layer on top of NML as "the application" for sim
 
 ###2.1. Use MessagePack at the application level, by swapping out the JSON encoding. 
 The application will transform the lua types, including userdata, through MessagePack.
-
-    ---------------------------------------------------------------------------------------------
-    |    application    |          MessagePack             |          NML                       |
-    {my_big_lua_table} --> MSGPACK:"[{my_big_lua_table}]" --> nanomsg:["[{my_big_lua_table}]"] --> socket
-    |               (lua types)                        (lua string)                             |
-    ---------------------------------------------------------------------------------------------
+                                                                                                                  socket      
+                                                                                                                     ^        
+                                                                                                                     |        
+                                                                                                                     |        
+                                                                                                                     |        
++---------------+                     +---------------+                  +---------------+                   +-------+-------+
+|               |                     |               |                  |               |                   |               |
+|               |    1.{lua_table}    |               | 4."[{lua_table}]"|               | 5."[{lua_table}]" |    nanomsg    |
+|  Application  +-------------------> |    NML Lua    +----------------> |    NML C      +-----------------> |     (dll)     |
+|      Lua      |                     |               |                  |               |                   |               |
+|               |                     |               |                  |               |                   |               |
++---------------+                     +--+------------+                  +---------------+                   +---------------+
+                                         |                                                                                    
+                                         |        ^                                                                           
+                            2.{lua_table}|        |                                                                           
+                                         |        | 3."[{lua_table}]"                                                         
+                                         |        |                                                                           
+                                         v        |                                                                           
+                                                  |                                                                           
+                                      +-----------+---+                  +---------------+                                    
+                                      |               |                  |               |                                    
+                                      |  MessagePack  |                  |  MessagePack  |                                    
+                                      |     Lua       | <--------------> |     C  (dll)  |                                    
+                                      |               |                  |               |                                    
+                                      |               |                  |               |                                    
+                                      +---------------+                  +---------------+                                    
 
 Similarly to JSON, MessagePack outputs its encoded buffer as a string. The string can then be passed into NML, same as it did with JSON.
 
@@ -68,14 +101,6 @@ Similarly to JSON, MessagePack outputs its encoded buffer as a string. The strin
 
 Sending data: NML's entry points accept regular lua types, including userdata types. The application sends lua types directly to NML's api (numbers, strings, tables...). NML's lua layer then forwards the lua data to the desired protocol encoder (MessagePack), which encodes the lua data into a lua string buffer. NML's lua layer then passes the resulting string buffer to NML's C module.
 
-    ---------------------------------------------------------------------------------------------
-    |   application     |                          NML                                          |
-    |                   |-----------------------------------                                    |
-    |                   |         MessagePack              |                                    |        
-    {my_big_lua_table} --> MSGPACK:"[{my_big_lua_table}]" --> nanomsg:["[{my_big_lua_table}]"] --> socket
-    |               (lua types)                       (lua string)                              |
-    ---------------------------------------------------------------------------------------------
-
 **+**
 
 - A unified, consistent way to transfer buffers between MediaCircus (MC) modules.
@@ -91,15 +116,7 @@ Sending data: NML's entry points accept regular lua types, including userdata ty
 ###2.3 Embed MessagePack into NML through NML's lua layer, and modify MessagePack to output a recycled userdata buffer.
 
 This goes a step further than point 2 above. MessagePack is still embedded into NML, but it no longer copies its packed buffer into a lua string buffer, saving a buffer copy. MessagePack exports its packed buffer as userdata, which is then read directly by nanomsg. 
-
-    --------------------------------------------------------------------------------------
-    |   application     |                           NML                                  |
-    |                   |---------------------------------                               |
-    |                   |        MessagePack             |                               |
-    {my_big_lua_table} --> MSGPACK:[{my_big_lua_table}] --> nanomsg:[{my_big_lua_table}] --> socket 
-    |               (lua types)                     (lua userdata)                       |
-    --------------------------------------------------------------------------------------
-    
+     
 **+**
 
 - Number of times the origina data is present in memory: 3.
@@ -114,15 +131,7 @@ This goes a step further than point 2 above. MessagePack is still embedded into 
 ###2.4 Embed MessagePack into NML through NML's lua layer, and leverage NML's buffer management api.
 
 MessagePack packs the data into a memory buffer that belongs to NML. This buffer is then sent over the SP socket through a zero-copy mechanism. 
-
-    ------------------------------------------------------------------
-    |  application      |                        NML                  |
-    |                   |---------------------------------|           |
-    |                   |         MessagePack             |           |     
-    {my_big_lua_table} --> MSGPACK:[{my_big_lua_table}] <--> nanomsg --> socket 
-    |                (lua types)                      (lua userdata)  |
-    -------------------------------------------------------------------
-    
+   
 **+**
 
 - Very efficient approach, only a single copy is necessary.
@@ -135,15 +144,30 @@ MessagePack packs the data into a memory buffer that belongs to NML. This buffer
 
 ###2.5 Embed MessagePack into NML through NML's lua layer, and provide nanomsg's C low level memory management callbacks to MessagePack.
 
-(same drawing as #4)
-
-    ------------------------------------------------------------------
-    |  application      |                        NML                  |
-    |                   |---------------------------------|           |
-    |                   |         MessagePack             |           |     
-    {my_big_lua_table} --> MSGPACK:[{my_big_lua_table}] <--> nanomsg --> socket 
-    |                (lua types)                      (lua userdata)  |
-    -------------------------------------------------------------------
++---------------+                     +---------------+ 3.{lua_table}, memory_fns   +---------------+                 +---------------+
+|               |                     |               +---------------------------> |               |                 |               |
+|               |    1.{lua_table}    |               |                             |  MessagePack  |                 |  MessagePack  |
+|  Application  +-------------------> |    NML Lua    |                             |     Lua       | <-------------> |       C       |
+|      Lua      |                     |               |        4.userdata           |               |                 |     (dll)     |
+|               |                     |               | <---------------------------+               |                 |               |
++---------------+                     +-------------+-+                             +---------------+                 +---------------+
+                                                    |                                                                                  
+                                        ^           |                                                                                  
+                                        |           | 5.userdata                                                                       
+                         2. memory_fns  |           |                                                                                  
+                                        |           v                                                                                  
+                                        |                                                                                              
+                                      +-+-------------+                             +---------------+                                  
+                                      |               |                             |               |                                  
+                                      |               |         6.userdata          |    nanomsg    |                                  
+                                      |    NML C      +---------------------------> |     (dll)     |                                  
+                                      |    (dll)      |                             |               |                                  
+                                      |               |                             |               |                                  
+                                      +---------------+                             +-------+-------+                                  
+                                                                                            |                                          
+                                                                                            |                                          
+                                                                                            v                                          
+                                                                                          socket                                       
 
 This would require NML's lua layer to fetch the memory allocation callbacks from NML's C module. Then pass these callbacks to MessagePack. Both modules would need to remain in memory as long as they are referencing each other.
 
@@ -392,10 +416,14 @@ error:
 
 #7. work breakdown
 
-
 1. Write binary serialization tests for cmsgpack.
 2. Implement binary serialization in cmsgpack.
 --> M1: binary serialization tested successfully
+
+**********
+********** NOTE: unpack frees the buffer
+********** allocators part of self, not every call
+********** 
 
 3. Write MessagePack/NML memory allocation tests, using Pack/Unpack and passing malloc/realloc/free.
 4. Implement NML memory allocation binding. (needed for next)
