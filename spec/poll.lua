@@ -1,209 +1,75 @@
 --local llthreads = require'llthreads'
 local nml=require'nml'
+local events = require'nml.events'
 --local pw=require'pl.pretty'.write
 require'busted'
 
-local AF_SP = nml.sym.AF_SP.value
-local NN_PAIR = nml.sym.NN_PAIR.value
-local NN_DONTWAIT = nml.sym.NN_DONTWAIT.value
-local NN_POLLIN = 1 -- nml.sym.NN_POLLIN.value
-local NN_POLLOUT = 2 -- nml.sym.NN_POLLOUT.value
-local SOCKET_ADDRESS = "inproc://a"
-local NN_RCVFD = nml.sym.NN_RCVFD.value
-local NN_SNDFD = nml.sym.NN_SNDFD.value
-local NN_SOL_SOCKET = nml.sym.NN_SOL_SOCKET.value
-local ETERM = nml.sym.ETERM.value
-
-local routine1 = [[
-	local SOCKET_ADDRESS = ]]..SOCKET_ADDRESS..[[
-	local nml=require'nml'
-	local sc = nml.socket(AF_SP, NN_PAIR)
-	nml.connect(sc, SOCKET_ADDRESS)
-	nml.sleep (10)
-	nml.send(sc, "ABC")
-	nml.close(sc)]]
-
-local routine2 = [[
-	local nml=require'nml'
-	nml.sleep (10)
-	nml.term()]]
-
-local NN_IN = 1
-local NN_OUT = 2
-
-local getevents = function(s, events, timeout)
-    local rc;
-    local pollset = {}
-    local rcvfd;
-    local sndfd;
-	local tv = {}
-	local revents;
-
-    if events & NN_IN == NN_IN then
-        rc, rcvfd = nml.getsockopt(s, NN_SOL_SOCKET, NN_RCVFD)
-		print("IN FD is "..rcvfd)
-        assert(rc~=-1)
-		pollset = nml.FD_SET(rcvfd, pollset)
-	end 
-
-    if events & NN_OUT == NN_OUT then
-        rc, sndfd = nml.getsockopt(s, NN_SOL_SOCKET, NN_SNDFD)
-        assert(rc == 0)
-		pollset = nml.FD_SET(sndfd, pollset)
-    end
-
-	--print(("getevents. events:[%d] rcvfd:[%d] sndfd:[%d] pollset:[%s]"):format(events, rcvfd and rcvfd or -1, sndfd and sndfd or -1, pw(pollset)))
-
-    if timeout and timeout >= 0 then
-        tv.tv_sec = timeout / 1000
-        tv.tv_usec = (timeout % 1000) * 1000
-	else
-		tv = nil
-    end
-	-- only check for readability
-	rc, pollset = nml.select(pollset, {}, {}, tv)
-	assert(pollset)
-    
-	print(("-select done. pollset:[%s]"):format(pw(pollset)))
-
-	revents = 0
-	for i=1, #pollset do
-		if pollset[i] == rcvfd and nml.FD_ISSET(rcvfd, pollset) then
-			revents = NN_IN
-		end
-		if pollset[i] == sndfd and nml.FD_ISSET(sndfd, pollset) then
-			revents = revents | NN_OUT
-		end
-	end
-	--print("getevents returning "..revents)
-    return revents
-end
-
-local rc
-local sb
-local sc
-local buf = {}
+local PAIR_ADDR = "inproc://pair"
 local msg
-
---struct nn_thread thread;
-local pfd = {}
+local count
+local sockets 
+local pair_1
+local pair_2
 describe("Poll tests #poll", function()
 	-- Test nn_poll() function
 	it("creates a pair", function()
-		sb = nml.socket(AF_SP, NN_PAIR)
-		assert.is_truthy(sb)
-		assert.are_not_equal(-1, sb)
+		pair_1 = nml.pair()
+		assert.is_truthy(pair_1)
+		assert.is_not_falsy(pair_1)
 	end)
 	it("binds to a socket", function()
-		assert.are_not_equal(-1, nml.bind(sb, SOCKET_ADDRESS))
+		assert.is_not_falsy(nml.bind(pair_1, PAIR_ADDR))
 	end)
 	it("creates a second pair", function()
-		sc = nml.socket(AF_SP, NN_PAIR)
-		assert.is_truthy(sc)
-		assert.are_not_equal(-1, sc)
+		pair_2 = nml.pair()
+		assert.is_truthy(pair_2)
+		assert.is_not_falsy(pair_2)
 	end)
 	it("connects to the pair", function()
-		assert.are_not_equal(-1, nml.connect(sc, SOCKET_ADDRESS))
+
+		assert.is_not_falsy(nml.connect(pair_2, PAIR_ADDR))
 	end)
 
-	--print(("sb:[%d], sc:[%d], IN:[%d], out:[%d]"):format(sb, sc, NN_POLLIN, NN_POLLOUT))
+	--print(("pair_1:[%d], pair_2:[%d], IN:[%d], out:[%d]"):format(pair_1, pair_2, NN_POLLIN, NN_POLLOUT))
 	
-	it("sb=OUT, sc=OUT (ready to send without blocking)", function()
+	it("pair_1=OUT, pair_2=OUT (ready to send without blocking)", function()
 		-- setup the fds
-		pfd[1] = {fd = sb, events = NN_POLLIN|NN_POLLOUT}
-		pfd[2] = {fd = sc, events = NN_POLLIN|NN_POLLOUT}
+		sockets = { 
+			pair_1, 	--{fd = pair_1, events = NN_POLLIN|NN_POLLOUT}
+			pair_2,			 --{fd = pair_2, events = NN_POLLIN|NN_POLLOUT}
+		}
 		
-		rc, pfd = nml.poll(pfd, 2, 10)
-		assert.are_equal(NN_POLLOUT, pfd[1].revents)
-		assert.are_equal(NN_POLLOUT, pfd[2].revents)
+		count, sockets = nml.poll(sockets, 10)
+		assert.are_equal(events.send, sockets[1].revents)
+		assert.are_equal(events.send, sockets[2].revents)
 	end)
-	it("sends ABC to sc", function()
-		-- sc sends "ABC"
-		assert.are_not_equal(-1, nml.send(sc, "ABC", NN_DONTWAIT))
-		nml.sleep(100)
+	it("sends ABC to pair_2", function()
+		-- pair_2 sends "ABC"
+		assert.is_not_falsy(nml.send(pair_2, "ABC", NN_DONTWAIT))
+		nml.core.sleep(100)
 	end)
-	it("sb=IN|OUT, sc=OUT", function()
-		rc, pfd = nml.poll(pfd, 2, 10)
-		--print(("2- poll called. pfd:[%s]"):format(pw(pfd)))
-		-- sb can process "ABC"
-		assert.are_equal(NN_POLLIN|NN_POLLOUT, pfd[1].revents)
-		assert.are_equal(NN_POLLOUT, pfd[2].revents)
+	it("pair_1=IN|OUT, pair_2=OUT", function()
+		count, sockets = nml.poll(sockets, 2, 10)
+		--print(("2- poll called. sockets:[%s]"):format(pw(sockets)))
+		-- pair_1 can process "ABC"
+		assert.are_equal(events.send |events.recv, sockets[1].revents)
+		assert.are_equal(events.send , sockets[2].revents)
 	end)
-	it("sb recv the message", function()
-		rc, msg = nml.recv(sb, NN_DONTWAIT)
-		assert.is_truthy(rc)
+	it("pair_1 recv the message", function()
+		msg = nml.recv(pair_1, NN_DONTWAIT)
+		assert.is_truthy(msg)
 		assert.are_equal("ABC", msg)
-		assert.are_not_equal(-1, rc)
 	end)
-	it("sb=OUT, sc=OUT #2", function()
-		rc, pfd = nml.poll(pfd, 2, 10)
-		assert.is_truthy(rc)
-		assert.are_equal(NN_POLLOUT, pfd[1].revents)
-		assert.are_equal(NN_POLLOUT, pfd[2].revents)
+	it("pair_1=OUT, pair_2=OUT #2", function()
+		count, sockets = nml.poll(sockets, 2, 10)
+		assert.is_truthy(count)
+		assert.are_equal(events.send, sockets[1].revents)
+		assert.are_equal(events.send, sockets[2].revents)
 	end)
 	
-	---------------------------------------------------------
-	-- compare result with native file descriptors and select
---[[
-	-- sb should be ready to send
-	rc = getevents(sb, NN_IN|NN_OUT, 1000)
-	assert(rc==NN_OUT)
-
-	-- poll for IN when no msg available, should timeout
-	rc = getevents(sb, NN_IN, 10)
-	assert(rc==0)
-
-	-- sc sends a msg, and test sb for IN
-	nml.send(sc, "ABC", NN_DONTWAIT)
-	rc = getevents(sb, NN_IN, 10)
-	assert(rc==NN_IN)
-
-	-- sb receives the msg, test sb for NN_IN, should timeout
-	rc = getevents(sb, NN_IN, 10)
-	assert(rc==0)
-end)
-
---[[
-print("*****")
--- /*  Send a message and start polling. This time IN event should be signaled. */
-
-rc = getevents(sc, NN_IN, 1000)
-assert(rc == NN_IN)
-
-print("*****")
-print("about to receive")
-
--- /*  Receive the message and make sure that IN is no longer signaled. */
-rc, msg = nml.recv(sc, NN_DONTWAIT)
-assert(rc~=-1)
-assert(msg=="ABC")
-rc = getevents (sc, NN_IN, 10)
-assert(rc == 0)
-
-print("about to test with threads")
-
--- /*  Check signalling from a different thread. */
-local thread = llthreads.new(routine1, "number:", 1, "nil:", nil, "bool:", true)
-assert(thread:start())
-rc = getevents (sb, NN_IN, 1000)
-assert (rc == NN_IN)
-rc, msg = nml.recv(sb, "ABC")
-assert(rc~=-1)
-assert(msg=="ABC")
-thread:join()
-
--- /*  Check terminating the library from a different thread. */
-thread = llthreads.new(routine2, "number:", 2, "nil:", nil, "bool:", true)
-assert(thread:start())
-rc = getevents (sb, NN_IN, 1000)
-assert(rc == NN_IN)
-rc, msg = nml.recv(sb, NN_DONTWAIT)
-assert (rc < 0 and nml.errno() == ETERM)
-thread:join()
-]]
 -- /*  Clean up. */
 	it("closes the sockets", function()
-		nml.close(sc)
-		nml.close(sb)
+		assert.is_truthy(nml.close(pair_2))
+		assert.is_truthy(nml.close(pair_1))
 	end)
 end)

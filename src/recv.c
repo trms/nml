@@ -45,7 +45,7 @@ int l_recv(lua_State* L)
 
 	if (buff_size !=-1) {
 		// put the string in lua space
-		lua_pushlstring(L, pData, buff_size);
+		lua_pushlstring(L, (const char *) pData, buff_size);
 
 		// free the nn buffer
 		iIntermediateResult = nn_freemsg(pData);

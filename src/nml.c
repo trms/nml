@@ -22,6 +22,8 @@
 
 #include "nml.h"
 
+
+
 int dump_stack (lua_State *L, const char * msg) {
 
 	int i;

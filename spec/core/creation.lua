@@ -1,5 +1,5 @@
 local busted = require("busted")
-local nml = require'nml'
+local nml = require'nml'.core
 
 local api = {"socket", "close", "setsockopt", "getsockopt", "bind", "connect", "shutdown", "send", "recv", "sendmsg", "recvmsg", "allocmsg", "freemsg", "cmsg", "poll", "errno", "strerror", 
 	"symbol", "symbolinfo", "device", "term", 

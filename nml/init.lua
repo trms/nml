@@ -1,10 +1,10 @@
 --[[---
 Nanomsg Binding for Lua
-@module nml
+@module Debug
 
 --]]
 
----[[ Debug stuff
+---[[ nml stuff
 do
 	local unpack = unpack or table.unpack
 	local pretty = require'pl.pretty'
@@ -31,11 +31,6 @@ for i, v in pairs(nml.symbol_cat.protocol) do
 
 	if type(i) == "string" then
 		local success, proto = pcall(require, 'nml.protocols.' .. i)
-		if success then
-			nml[i] = function(...)
-				return proto[i](...)
-			end
-		end
 	end
 	-- print('symbol_cat:', i)
 
@@ -63,7 +58,7 @@ setmetatable(nml, {
 
 
 --]]
-
+--[[
 
 local addr = "inproc://a"
 
@@ -91,12 +86,12 @@ local b_receive = nml.bus():bind("inproc://b")
 
 sockets[6].send(sockets[1], "foo")
 
-local ready = nml.poll(sockets)
+local count, ready = nml.poll(sockets)
 print(#ready.recv, #ready.send)
 for i, v in ipairs(ready.recv) do
 	print('revent: ', i, v.fd)
 end
-
+--]]
 --[[local testing
 -- pt("domain", symbol_cat.domain, symbol_cat.flag)
 --[=[Categories:

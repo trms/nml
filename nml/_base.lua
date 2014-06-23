@@ -5,28 +5,18 @@
 local nml = require'nml.symbols' --symbols and symbol_cat
 nml.core = require'nml.core'
 nml.options = require'nml.options'
+local events = require'nml.events'
 nml.sym = nml.symbols
 
 local def_option_level = assert(nml.symbol_cat.option_level.sol_socket.value, "There is a default socket level.")
 
-do
-	local errno, strerror = assert(nml.core.errno, "There is an errno function in nml.core"), assert(nml.core.strerror, "There is an strerr function in nml.core.")
-	local ETERM = nml.symbol_cat.error.eterm.value
-	function nml:nml_error(n)
-		n = n or errno()
-		if type(n) == "string" then
-			return n
-		elseif n ~= 0 then
-			if n == ETERM and self[1] then
-				self:close()
-			end
+local POLL_SEND = assert(nml.symbol_cat.poll.send.value)
+local POLL_RECV = assert(nml.symbol_cat.poll.recv.value)
 
-			return ("nanomsg error[%d]: %s"):format(n, strerror(n)), n
-		else
-			return nil
-		end
-	end
-end
+
+
+
+nml.nml_error = require'nml.error'
 
 local socket_mt = {}
 
@@ -58,13 +48,11 @@ function socket_mt:__newindex(index, value)
 			self:setsockopt(index, value)
 	elseif index == "events" then
 		if value =="send" then
-			rawset(self, "_events", _self.sybmol_cat.poll.send)
+			rawset(self, "_events", POLL_SEND)
 		elseif value == "recv" then
-			rawset(self, "_events", _self.sybmol_cat.poll.recv)
+			rawset(self, "_events", POLL_RECV)
 		elseif value == "both" then
-			rawset(self, "_events", 
-				_self.sybmol_cat.poll.recv |  _self.sybmol_cat.poll.send
-			)
+			rawset(self, "_events", POLL_SEND |  POLL_RECV)
 		elseif not value then
 			rawset(self, "_events", 0)
 		elseif type(value) == "number" then
@@ -161,13 +149,7 @@ we may want to add the ability to process messages using a serializer/deserializ
 we could provide a documented way to write a C handler for messages and we'd be able to use
 zero copy to do it.
 --]]
-local events = {
-	[nml.symbol_cat.poll.send.value] = "send", send = nml.symbol_cat.poll.send.value,
-	[nml.symbol_cat.poll.recv.value] = "recv", recv = nml.symbol_cat.poll.recv.value,
-	
-}
-events[events.send | events.recv] = "both" 
-events.both = events.send | events.recv
+
 
 function nml:send (msg, dontwait)
 	if not self[1] then return nil, self:nml_error("No socket.") end
@@ -193,46 +175,11 @@ function nml:recv (dontwait)
 
 end
 
-function nml.poll (...)
-	local timeout
-	local fds, count, ready
-	
-	if  select("#", ...) > 1 then
-		fds = { ... }
-	elseif type(...) == "table" then --assume a sequence was passed in first 
-		fds = (...)
-	else
-		error(("nml error: Expected a sequence of sockets to poll. Received '%s'"):format(type((...))) )
-	end
+nml.poll= require'nml.poll'.poll
+nml.poll_coroutine = require'nml.poll'.poll_coroutine
 
-	if type(fds[#fds]) == "number" then
-		timeout =  fds[#fds] 
-		fds[#fds] = nil
-	else
-		timeout = 0
-	end
-	if #fds > 0 then
 
-		count, fds = nml.core.poll(fds,#fds, timeout)
 
-		if count > 0 then
-			ready = {send = {}, recv = {}}
-
-			for i, s in ipairs(fds) do
-
-				if (events.send & s.revents) > 0 then
-					ready.send[#ready.send + 1] = s
-				end
-				if (events.recv & s.revents) > 0 then
-					ready.recv[#ready.recv + 1] = s
-				end
-				s.revents = nil
-			end
-			return ready
-		end
-	end
-
-end
 
 function nml:shutdown_all(where)
 	if not self[1] then return nil, self:nml_error("No socket.") end
@@ -282,10 +229,10 @@ function nml:close ()
 	end
 end
 function nml:term ()
-	self.core.term()
+	nml.core.term()
 	--term is library wide, so we do not need to have a socket in order to call it.
 	--therefore, only close if we have a socket.
-	if self[1] then
+	if self and self[1] then
 		return self:close()
 	else
 		return true
