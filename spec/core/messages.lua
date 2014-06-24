@@ -55,6 +55,7 @@ describe ("basic nml_msg operation #nml_msg", function()
 		assert.is_equal("userdata", type(msg_ud))
 		--this is so that I can see what type it is, in unadorned Lua
 		--also note that colon syntax works here too. I'll use that later.
+		--TODO: implement this in nml, not in nml.core
 		-- assert.is_equal("nml_msg", nml.type(msg_ud))
 		-- has not been set yet.
 		assert.is_equal(nil, nml.gethead(msg_ud))
