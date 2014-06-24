@@ -21,30 +21,60 @@ local pair_2 = nml.socket(AF_SP, NN_PAIR)
 nml.connect(pair_2, PAIR_ADDR)
 local msg_ud, msg_str
 
+local msgpack, ret_str, test_table, ret_table, ret_ud, err
+
+local msgpack_methods = {
+	"ser", --serialize
+	"deser", --deserialize
+}
 
 describe ("msg_mspack operation #msg_mspack", function()
-	it("can make a new message that is empty.", function()
-		--new empty message
-		msg_ud = nml.nml_msg()
+	it("can be loaded", function()
+		msgpack = require'nml.msgpack.core'
 
-		assert.is_equal("userdata", type(msg_ud))
-		--returns the content of head, which should be a sequence of \0
-		--this is so that I can see what type it is, in unadorned Lua
-		--also note that colon syntax works here too. I'll use that later.
-		-- assert.is_equal("nml_msg", nml.type(msg_ud))
-		-- has not been set yet.
-		assert.is_equal(string.rep(, nml.gethead(msg_ud))
+	end)
 
-		--this should call the __gc method, which should see that the buffer is nil and do nothing.
-		--don't know how to test that though.
-		msg_ud = nil
-		collectgarbage()
+	it("has all of the required methods", function()
+
+
+	end)
+
+	it("can make a new message with a table and return a string of the value.", function()
+		test_table = {"Hello,", "world", "!"}
+		ret_str = msgpack.ser(test_table)
+--I'm not sure what the msgpack version of the above would be...
+		assert.equal([=[["Hello,","world","!"]]=], ret_str)
+		
+	end)
+	it("given a string, it can parse a msgpack encoded message and turn it into a lua table.", function()
+		ret_table = msgpack.deser(ret_str)
+		assert.equal(test_table, ret_table)
+	end)
+
+	it("given a table and an nml_msg, it can make a new message and return a prepared value, with the type set in the header.", function()
+		msg_ud = assert(nml.nml_msg())
+		ret_ud, err = msgpack.ser(test_table, msg_ud)
+		assert.equal(msg_ud, ret_ud) --they reference the same value.
+		--note, I think that when a message type name is entered, it should be 0 terminated.
+		--that means that gethead will return 8 characters here, because the entire head includes the 0.
+		--This way, we can put more than just the message type. Alternately, a `;` could be used, if you prefer. :)
+		assert.equal("msgpack\0", nml.gethead(msg_ud)) 
+
 	end)
 
 
+
+	it("given an nml_msg, it can parse the msgpack encoded data and turn it into a lua table.", function()
+
+	end)
+
+	it("can encode a table that has a nested nml_msg userdata.", function()
+
+	end)
+
 	it("can make a new empty message and then have a string serialized into it.", function()
 		--new empty message
-		msg_ud = nml.nml_msg() 
+		
 		msg_str ="Hello, World!" 
 
 	--I can do this, if needed: no type specified. imply string.
