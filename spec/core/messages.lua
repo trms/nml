@@ -23,8 +23,8 @@ local msg_ud, msg_str
 
 local message_api = {
  	"nml_msg", 		-- make a new message
- 	"settype", 		-- set the type of message
- 	"gettype", 		-- get the type of message
+ 	"sethead", 		-- set the header byte string of message. Fixed size.
+ 	"gethead", 		-- get the header byte string of message. Fixed size.
  	"fromstring", 	--make message contents from a string
  	"tostring", 	--turn any message into a Lua string.
  	"getsize", 		--number of bytes in a message. nil is no message present (not initialized).
@@ -57,7 +57,7 @@ describe ("basic nml_msg operation #nml_msg", function()
 		--also note that colon syntax works here too. I'll use that later.
 		-- assert.is_equal("nml_msg", nml.type(msg_ud))
 		-- has not been set yet.
-		assert.is_equal(nil, nml.gettype(msg_ud))
+		assert.is_equal(nil, nml.gethead(msg_ud))
 
 		--this should call the __gc method, which should see that the buffer is nil and do nothing.
 		--don't know how to test that though.
@@ -77,7 +77,7 @@ describe ("basic nml_msg operation #nml_msg", function()
 		
 		--set automatically if absent.
 
-		assert.is_equal("string", nml.gettype(msg_ud))
+		assert.is_equal("string", nml.gethead(msg_ud))
 		
 		it("will let me re-make the buffer in an existing message.", function()
 			assert.is_truthy(nml.fromstring(msg_ud, "My second string"))
@@ -87,15 +87,15 @@ describe ("basic nml_msg operation #nml_msg", function()
 	end)
 
 	it("will let me set the type, explicitly.", function()
-		assert.is_truthy(nml.settype(msg_ud, "bar_string"))
+		assert.is_truthy(nml.sethead(msg_ud, "bar_string"))
 
-		assert.is_equal("bar_string", nml.gettype(msg_ud))
+		assert.is_equal("bar_string", nml.gethead(msg_ud))
 	end)
 
 	it("will let me specifiy the type, explicitly, when I make a message from a string.", function()
 		assert.is_truthy(nml.fromstring(msg_str, "foo_string"))
 
-		assert.is_equal("foo_string", nml.gettype(msg_ud))
+		assert.is_equal("foo_string", nml.gethead(msg_ud))
 	end)
 
 
@@ -130,7 +130,7 @@ describe ("basic nml_msg operation #nml_msg", function()
 		--new empty message
 		msg_ud = nml.nml_msg("Hello, world.", "string") 
 		--string is there
-		assert.is_equal("string", nml.gettype(msg_ud))
+		assert.is_equal("string", nml.gethead(msg_ud))
 	
 		msg_ud = nil
 		collectgarbage()
