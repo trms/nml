@@ -86,13 +86,14 @@ describe ("basic nml_msg operation #nml_msg", function()
 	it("will let me get all of the characters up to a specified character, *excluding* that character.", function()
 		assert.is_equal("string", nml.msg_gethead(msg_ud, "\0"))
 	end)
+
 	it("will let me get all of the characters *after* a specified numerical index (1 based), *including* that index.", function()
 		assert.is_equal("My second string", nml.msg_gettail(msg_ud, 8))
 	end)
+	
 	it("will let me get all of the characters *after* a specified character, *excluding* that character.", function()
 		assert.is_equal("My second string", nml.msg_gettail(msg_ud, "\0"))
 	end)
-
 
 	it("can reproduce the entier message as a string", function()
 		assert.is_equal(msg_str, nml.msg_tostring(msg_ud))
@@ -107,7 +108,6 @@ describe ("basic nml_msg operation #nml_msg", function()
 	-- it("can report the size of a message using the __len metamethod", function()
 	-- 	assert.is_equal(#msg_str, #msg_ud)
 	-- end)
-	
 
 	it("can allow me to msg_free a message explicitly and not crash if it is collected (double msg_free).", function()
 		--returns true when msg_free happens. false if no pointer. nil, msg (or error) if something bad happens.

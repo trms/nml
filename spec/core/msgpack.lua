@@ -21,9 +21,9 @@ local pair_2 = nml.socket(AF_SP, NN_PAIR)
 nml.connect(pair_2, PAIR_ADDR)
 local msg_ud, msg_str
 
-local msgpack, ret_str, test_table, ret_table, ret_ud, err
+local msgpack, ret_str, test_table, ret_table, ret_ud, err, msg_start_index
 
-local msgpack_methods = {
+local msgpack_api = {
 	"ser", --serialize
 	"deser", --deserialize
 }
@@ -35,7 +35,11 @@ describe ("msg_mspack operation #msg_mspack", function()
 	end)
 
 	it("has all of the required methods", function()
-
+		for i, method in ipairs(msgpack_api) do
+			it("has all of the api calls present.", function()
+				assert.is_truthy(msgpack[msgpack_api])
+			end)
+		end
 
 	end)
 
@@ -51,96 +55,29 @@ describe ("msg_mspack operation #msg_mspack", function()
 		assert.equal(test_table, ret_table)
 	end)
 
-	it("given a table and an nml_msg, it can make a new message and return a prepared value, with the type set in the header.", function()
+	it("given a table and an nml_msg, it can make a new message and return the same msg_ud object, but with the buffer filled in. The third argument is prepended to the message.", function()
 		msg_ud = assert(nml.nml_msg())
-		ret_ud, err = msgpack.ser(test_table, msg_ud)
+		ret_ud, err = msgpack.ser(test_table, msg_ud, "msgpack\0")
 		assert.equal(msg_ud, ret_ud) --they reference the same value.
-		--note, I think that when a message type name is entered, it should be 0 terminated.
-		--that means that gethead will return 8 characters here, because the entire head includes the 0.
-		--This way, we can put more than just the message type. Alternately, a `;` could be used, if you prefer. :)
-		assert.equal("msgpack\0", nml.gethead(msg_ud)) 
+
+		assert.equal("msgpack", nml.msg_gethead(msg_ud, "\0"))
+		--length of type plus 1 (\0) plus 1 (first char of msgpack data)
+		msg_start_index = #("msgpack") + 2
+		assert.equal(ret_str, nml.msg_gettail(msg_ud, msg_start_index)) 
 
 	end)
 
 
 
 	it("given an nml_msg, it can parse the msgpack encoded data and turn it into a lua table.", function()
-
+		ret_table = msgpack.deser(msg_ud, msg_start_index)
+		assert.is_equal(test_table, ret_table)
 	end)
 
 	it("can encode a table that has a nested nml_msg userdata.", function()
-
+		--todo
 	end)
 
-	it("can make a new empty message and then have a string serialized into it.", function()
-		--new empty message
-		
-		msg_str ="Hello, World!" 
-
-	--I can do this, if needed: no type specified. imply string.
-	--for now, I'll leave it in.
-		assert.is_truthy(nml.fromstring(msg_ud, msg_str)) --,#msg_str ) -- do we want to allow setting the length seperately?
-		
-		--set automatically if absent.
-
-		assert.is_equal("string", nml.gethead(msg_ud))
-		
-		it("will let me re-make the buffer in an existing message.", function()
-			assert.is_truthy(nml.fromstring(msg_ud, "My second string"))
-
-		end) 
-
-	end)
-
-	it("will let me set the type, explicitly.", function()
-		assert.is_truthy(nml.sethead(msg_ud, "bar_string"))
-
-		assert.is_equal("bar_string", nml.gethead(msg_ud))
-	end)
-
-	it("will let me specifiy the type, explicitly, when I make a message from a string.", function()
-		assert.is_truthy(nml.fromstring(msg_str, "foo_string"))
-
-		assert.is_equal("foo_string", nml.gethead(msg_ud))
-	end)
-
-
-	it("can reproduce the message as a string", function()
-		assert.is_equal(msg_str, nml.tostring(msg_ud))
-	end)
-
-	it("can report the size of a message using the getsize method", function()
-		assert.is_equal(#msg_str, nml.getsize(msg_ud))
-	end)
-
-	--I can do this, if needed.
-
-	-- it("can report the size of a message using the __len metamethod", function()
-	-- 	assert.is_equal(#msg_str, #msg_ud)
-	-- end)
-	
-
-	it("can allow me to free a message explicitly and not crash if it is collected (double free).", function()
-		--returns true when free happens. false if no pointer. nil, msg (or error) if something bad happens.
-		assert.is_true(nml.free(msg_ud))
-		--freeing again returns false.
-		assert.is_false(nml.free(msg_ud))
-		msg_ud = nil
-		collectgarbage();collectgarbage();collectgarbage()
-	--there shouldn't be any error here, even though __gc was called.
-
-	end)
-
-	--Christian: should we do this? That is, allow making a new message and defining the contents from a string?
-	it("can make a new message from a string.", function()
-		--new empty message
-		msg_ud = nml.nml_msg("Hello, world.", "string") 
-		--string is there
-		assert.is_equal("string", nml.gethead(msg_ud))
-	
-		msg_ud = nil
-		collectgarbage()
-	end)
 
 
 end)
