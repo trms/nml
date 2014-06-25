@@ -71,36 +71,30 @@ describe ("basic nml_msg operation #nml_msg", function()
 		--new empty message
 		msg_ud = nml.nml_msg() 
 		msg_str ="Hello, World!" 
-
-	--I can do this, if needed: no type specified. imply string.
-	--for now, I'll leave it in.
 		assert.is_truthy(nml.fromstring(msg_ud, msg_str)) --,#msg_str ) -- do we want to allow setting the length seperately?
-		
-		--set automatically if absent.
-
-		assert.is_equal("string", nml.gethead(msg_ud))
-		
-		it("will let me re-make the buffer in an existing message.", function()
-			assert.is_truthy(nml.fromstring(msg_ud, "My second string"))
-
-		end) 
-
 	end)
 
-	it("will let me set the type, explicitly.", function()
-		assert.is_truthy(nml.sethead(msg_ud, "bar_string"))
+	it("will let me re-make the buffer in an existing message.", function()
+		msg_str = "string\0My second string"
+		assert.is_truthy(nml.fromstring(msg_ud, msg_str))
+	end) 
 
-		assert.is_equal("bar_string", nml.gethead(msg_ud))
+	it("will let me get the first seven characters of a message.", function()
+		assert.is_equal("string\0", nml.gethead(msg_ud, 7))
 	end)
 
-	it("will let me specifiy the type, explicitly, when I make a message from a string.", function()
-		assert.is_truthy(nml.fromstring(msg_str, "foo_string"))
-
-		assert.is_equal("foo_string", nml.gethead(msg_ud))
+	it("will let me get all of the characters up to and including a specified character.", function()
+		assert.is_equal("string\0", nml.gethead(msg_ud, "\0"))
+	end)
+	it("will let me get all of the characters *after* a specified numerical index (1 based), *including* that index.", function()
+		assert.is_equal("My second string", nml.gettail(msg_ud, 8))
+	end)
+	it("will let me get all of the characters *after* a specified character, *excluding* that character.", function()
+		assert.is_equal("My second string", nml.gettail(msg_ud, "\0"))
 	end)
 
 
-	it("can reproduce the message as a string", function()
+	it("can reproduce the entier message as a string", function()
 		assert.is_equal(msg_str, nml.tostring(msg_ud))
 	end)
 
