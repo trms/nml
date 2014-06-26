@@ -124,7 +124,7 @@ The header is propagated to lua as a string type, but internally is handled simi
 #4 NML api
 Note: It's interesting to appreciate here that a function callback made from one C module will be executed in another C module, using the Lua stack as a middle man.
 
-###4.1 nml.new_msg()
+###4.1 nml.nml_msg()
 Creates a new Message userdata object. Specifies a type name common to all messages, in order to later use luaL_checkudata(..., name).
 
 Returns a new message userdata if successful, nil and an error message string in case of error.
@@ -235,6 +235,7 @@ Returns the message's header as a lua string.
 ---
 
 ###4.10 nml.send
+This is not a message API, but it will need to be modified to support the Message userdata.
 Sends a Message to an SP socket.
 
     nml.send(socket, msg_ud, flags)
@@ -258,6 +259,7 @@ The msg_ud's buffer and header memory will be freed and set to NULL by the send.
 ---
 
 ###4.11 nml.recv
+This is not a message API, but it will need to be modified to support the Message userdata.
 Receives a message coming from an SP socket and pushes it to lua as a string buffer.
 
      local msg_ud = nml.recv(socket, flags)
@@ -285,7 +287,7 @@ error:
     struct nn_msghdr hdr;
 
     // create a new message
-    new_msg(L);
+    nml_msg(L);
     pMessage = luaL_checkudata(L, -1, message_metatable_str);
 
     // put it at L[3]
@@ -308,6 +310,13 @@ error:
     // return the msg_ud
     lua_pushvalue(L, 3);
     return 1;
+
+---
+
+4.12 nml.msg_tostring
+Copies the content of pvBuffer into a lua string.
+
+Always returns a string. If pvBuffer is NULL then it will return an empty string.
 
 ---
 

@@ -1,6 +1,6 @@
 -- taken from nanomsg's reqrep.c
 local busted = require("busted")
-local nml = require'nml'.core
+local nml = require'nml.core'
 
 local socket_address = "inproc://test"
 local sym = {AF_SP=-1, NN_REP=-1, NN_REQ=-1, EFSM=-1, NN_DONTWAIT=-1}

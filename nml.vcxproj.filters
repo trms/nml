@@ -24,6 +24,9 @@
     <Filter Include="lua">
       <UniqueIdentifier>{c1a60dcb-0487-4f11-b040-b3cbc7d516ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="spec\core">
+      <UniqueIdentifier>{0f5a1665-4bb0-4acb-85df-3bc5b6cc4cfc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\nml.h">
@@ -202,29 +205,38 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="spec\creation.lua">
-      <Filter>spec</Filter>
-    </None>
-    <None Include="spec\reqrep.lua">
-      <Filter>spec</Filter>
-    </None>
     <None Include="..\nanomsg\tests\README">
       <Filter>nanomsg\tests</Filter>
-    </None>
-    <None Include="spec\shutdown.lua">
-      <Filter>spec</Filter>
-    </None>
-    <None Include="spec\pair.lua">
-      <Filter>spec</Filter>
-    </None>
-    <None Include="spec\poll.lua">
-      <Filter>spec</Filter>
     </None>
     <None Include="nml\init.lua">
       <Filter>lua</Filter>
     </None>
     <None Include="nml\config.lua">
       <Filter>lua</Filter>
+    </None>
+    <None Include="spec\core\core_creation.lua">
+      <Filter>spec\core</Filter>
+    </None>
+    <None Include="spec\core\core_messages.lua">
+      <Filter>spec\core</Filter>
+    </None>
+    <None Include="spec\core\core_msgpack.lua">
+      <Filter>spec\core</Filter>
+    </None>
+    <None Include="spec\core\core_pair.lua">
+      <Filter>spec\core</Filter>
+    </None>
+    <None Include="spec\core\core_poll.lua">
+      <Filter>spec\core</Filter>
+    </None>
+    <None Include="spec\core\core_reqrep.lua">
+      <Filter>spec\core</Filter>
+    </None>
+    <None Include="spec\core\core_send_recv.lua">
+      <Filter>spec\core</Filter>
+    </None>
+    <None Include="spec\core\core_shutdown.lua">
+      <Filter>spec\core</Filter>
     </None>
   </ItemGroup>
 </Project>

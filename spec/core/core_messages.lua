@@ -22,31 +22,30 @@ nml.connect(pair_2, PAIR_ADDR)
 local msg_ud, msg_str
 
 local message_api = {
- 	"nml_msg", 		-- make a new message
- 	"msg_gethead", 		-- everything prior to an index (inclusive) or a specified char (exclusive).
- 	"msg_gethead", 		-- everything after to an index (inclusive) or a specified char (exclusive). 
- 	"msg_fromstring", 	--make message contents from a string
- 	"msg_tostring", 	--turn any message into a Lua string.
- 	"msg_getsize", 		--number of bytes in a message. nil is no message present (not initialized).
- 	"msg_free", 		--msg_free an existing message. 
- 						--true is "message freed", 
- 						--false is "no message present", 
- 						--nil, err is an error.
- 	"msg_alloc",		--allocates memory for a buffer. probably only called in C
- 	"msg_realloc", 		--dito, but reaollocates...
- 	--not sure what other memory functions are needed...
+	"nml_msg", 			-- make a new message
+	"msg_getbuffer",	-- gets the buffer lud
+	"msg_getheader",	-- gets the header as a lua string
+	"msg_fromstring", 	--make message contents from a string
+	"msg_tostring", 	--turn any message into a Lua string.
+	"msg_getsize", 		--number of bytes in a message. nil is no message present (not initialized).
+	"msg_setheader",	-- copies the specified string in the message's header, used to id the protocol
+	"msg_getheader",	-- returns the message's header string as a lua string
+	"msg_free", 		--msg_free an existing message. 
+						--true is "message freed", 
+						--false is "no message present", 
+						--nil, err is an error.
+	"msg_alloc",		--allocates memory for a buffer. probably only called in C
+	"msg_realloc", 		--dito, but reaollocates...
 }
+
 describe("the nml_msg api methods #nml_msg", function()
-	
 		for i, method in ipairs(message_api) do
 			it("has all of the api calls present.", function()
 				assert.is_equal("function", type(nml[message_api]))
 			end)
 		end
-
-
-
 end)
+
 describe ("basic nml_msg operation #nml_msg", function()
 	it("can make a new message that is empty.", function()
 		--new empty message
@@ -58,7 +57,7 @@ describe ("basic nml_msg operation #nml_msg", function()
 		--TODO: implement this in nml, not in nml.core
 		-- assert.is_equal("nml_msg", nml.type(msg_ud))
 		-- has not been set yet.
-		assert.is_equal(nil, nml.msg_gethead(msg_ud))
+		assert.is_equal("", nml.msg_getheader(msg_ud))
 
 		--this should call the __gc method, which should see that the buffer is nil and do nothing.
 		--don't know how to test that though.
@@ -66,12 +65,11 @@ describe ("basic nml_msg operation #nml_msg", function()
 		collectgarbage()
 	end)
 
-
 	it("can make a new empty message and then have a string serialized into it.", function()
 		--new empty message
 		msg_ud = nml.nml_msg() 
 		msg_str ="Hello, World!" 
-		assert.is_truthy(nml.msg_fromstring(msg_ud, msg_str)) --,#msg_str ) -- do we want to allow setting the length seperately?
+		assert.is_truthy(nml.msg_fromstring(msg_ud, msg_str))
 	end)
 
 	it("will let me re-make the buffer in an existing message.", function()
@@ -79,23 +77,15 @@ describe ("basic nml_msg operation #nml_msg", function()
 		assert.is_truthy(nml.msg_fromstring(msg_ud, msg_str))
 	end) 
 
-	it("will let me get the first seven characters of a message.", function()
-		assert.is_equal("string\0", nml.msg_gethead(msg_ud, 7))
+	it("will let me specify a header.", function()
+		assert.is_truthy(nml.msg_setheader(msg_ud, "myprotocol"))
 	end)
 
-	it("will let me get all of the characters up to a specified character, *excluding* that character.", function()
-		assert.is_equal("string", nml.msg_gethead(msg_ud, "\0"))
+	it("will let me retrieve the message's header into a lua string", function()
+		assert.are_equal("myprotocol", nml.msg_getheader(msg_ud))
 	end)
 
-	it("will let me get all of the characters *after* a specified numerical index (1 based), *including* that index.", function()
-		assert.is_equal("My second string", nml.msg_gettail(msg_ud, 8))
-	end)
-	
-	it("will let me get all of the characters *after* a specified character, *excluding* that character.", function()
-		assert.is_equal("My second string", nml.msg_gettail(msg_ud, "\0"))
-	end)
-
-	it("can reproduce the entier message as a string", function()
+	it("can reproduce the entire message as a string", function()
 		assert.is_equal(msg_str, nml.msg_tostring(msg_ud))
 	end)
 
@@ -103,11 +93,9 @@ describe ("basic nml_msg operation #nml_msg", function()
 		assert.is_equal(#msg_str, nml.msg_getsize(msg_ud))
 	end)
 
-	--I can do this, if needed.
-
-	-- it("can report the size of a message using the __len metamethod", function()
-	-- 	assert.is_equal(#msg_str, #msg_ud)
-	-- end)
+	it("can report the size of a message using the __len metamethod", function()
+		assert.is_equal(#msg_str, #msg_ud)
+	end)
 
 	it("can allow me to msg_free a message explicitly and not crash if it is collected (double msg_free).", function()
 		--returns true when msg_free happens. false if no pointer. nil, msg (or error) if something bad happens.
@@ -119,17 +107,4 @@ describe ("basic nml_msg operation #nml_msg", function()
 	--there shouldn't be any error here, even though __gc was called.
 
 	end)
-
-	--Christian: should we do this? That is, allow making a new message and defining the contents from a string?
-	it("can make a new message from a string.", function()
-		--new empty message
-		msg_ud = nml.nml_msg("Hello, world.", "string") 
-		--string is there
-		assert.is_equal("string", nml.msg_gethead(msg_ud))
-	
-		msg_ud = nil
-		collectgarbage()
-	end)
-
-
 end)

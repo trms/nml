@@ -1,5 +1,5 @@
 --local llthreads = require'llthreads'
-local nml=require'nml'
+local nml=require'nml.core'
 local events = require'nml.events'
 --local pw=require'pl.pretty'.write
 require'busted'

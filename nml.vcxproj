@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="packages\luafilesystem.1.6.1.2\build\native\luafilesystem.props" Condition="Exists('packages\luafilesystem.1.6.1.2\build\native\luafilesystem.props')" />
   <Import Project="packages\lua.5.3.0003.01\build\native\lua.props" Condition="Exists('packages\lua.5.3.0003.01\build\native\lua.props')" />
   <Import Project="packages\nanomsg.0.3.0613.8\build\native\nanomsg.props" Condition="Exists('packages\nanomsg.0.3.0613.8\build\native\nanomsg.props')" />
   <Import Project="packages\llthreads2.0.1.1.4\build\native\llthreads2.props" Condition="Exists('packages\llthreads2.0.1.1.4\build\native\llthreads2.props')" />
   <Import Project="packages\busted.1.11.1.28\build\native\busted.props" Condition="Exists('packages\busted.1.11.1.28\build\native\busted.props')" />
   <Import Project="packages\penlight.0.8.002.9\build\native\penlight.props" Condition="Exists('packages\penlight.0.8.002.9\build\native\penlight.props')" />
-  <Import Project="packages\luafilesystem.1.6.1.1\build\native\luafilesystem.props" Condition="Exists('packages\luafilesystem.1.6.1.1\build\native\luafilesystem.props')" />
   <Import Project="packages\cliargs.2.1.2.6\build\native\cliargs.props" Condition="Exists('packages\cliargs.2.1.2.6\build\native\cliargs.props')" />
   <Import Project="packages\dkjson.2.5.0.3\build\native\dkjson.props" Condition="Exists('packages\dkjson.2.5.0.3\build\native\dkjson.props')" />
   <Import Project="packages\ansicolors.1.0.0.3\build\native\ansicolors.props" Condition="Exists('packages\ansicolors.1.0.0.3\build\native\ansicolors.props')" />
@@ -394,11 +394,14 @@
     <None Include="nml\config.lua" />
     <None Include="nml\init.lua" />
     <None Include="packages.config" />
-    <None Include="spec\creation.lua" />
-    <None Include="spec\pair.lua" />
-    <None Include="spec\poll.lua" />
-    <None Include="spec\reqrep.lua" />
-    <None Include="spec\shutdown.lua" />
+    <None Include="spec\core\core_creation.lua" />
+    <None Include="spec\core\core_messages.lua" />
+    <None Include="spec\core\core_msgpack.lua" />
+    <None Include="spec\core\core_pair.lua" />
+    <None Include="spec\core\core_poll.lua" />
+    <None Include="spec\core\core_reqrep.lua" />
+    <None Include="spec\core\core_send_recv.lua" />
+    <None Include="spec\core\core_shutdown.lua" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
@@ -407,12 +410,12 @@
     <Import Project="packages\ansicolors.1.0.0.3\build\native\ansicolors.targets" Condition="Exists('packages\ansicolors.1.0.0.3\build\native\ansicolors.targets')" />
     <Import Project="packages\dkjson.2.5.0.3\build\native\dkjson.targets" Condition="Exists('packages\dkjson.2.5.0.3\build\native\dkjson.targets')" />
     <Import Project="packages\cliargs.2.1.2.6\build\native\cliargs.targets" Condition="Exists('packages\cliargs.2.1.2.6\build\native\cliargs.targets')" />
-    <Import Project="packages\luafilesystem.1.6.1.1\build\native\luafilesystem.targets" Condition="Exists('packages\luafilesystem.1.6.1.1\build\native\luafilesystem.targets')" />
     <Import Project="packages\penlight.0.8.002.9\build\native\penlight.targets" Condition="Exists('packages\penlight.0.8.002.9\build\native\penlight.targets')" />
     <Import Project="packages\busted.1.11.1.28\build\native\busted.targets" Condition="Exists('packages\busted.1.11.1.28\build\native\busted.targets')" />
     <Import Project="packages\llthreads2.0.1.1.4\build\native\llthreads2.targets" Condition="Exists('packages\llthreads2.0.1.1.4\build\native\llthreads2.targets')" />
     <Import Project="packages\nanomsg.0.3.0613.8\build\native\nanomsg.targets" Condition="Exists('packages\nanomsg.0.3.0613.8\build\native\nanomsg.targets')" />
     <Import Project="packages\lua.5.3.0003.01\build\native\lua.targets" Condition="Exists('packages\lua.5.3.0003.01\build\native\lua.targets')" />
+    <Import Project="packages\luafilesystem.1.6.1.2\build\native\luafilesystem.targets" Condition="Exists('packages\luafilesystem.1.6.1.2\build\native\luafilesystem.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -428,8 +431,6 @@
     <Error Condition="!Exists('packages\dkjson.2.5.0.3\build\native\dkjson.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\dkjson.2.5.0.3\build\native\dkjson.targets'))" />
     <Error Condition="!Exists('packages\cliargs.2.1.2.6\build\native\cliargs.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\cliargs.2.1.2.6\build\native\cliargs.props'))" />
     <Error Condition="!Exists('packages\cliargs.2.1.2.6\build\native\cliargs.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\cliargs.2.1.2.6\build\native\cliargs.targets'))" />
-    <Error Condition="!Exists('packages\luafilesystem.1.6.1.1\build\native\luafilesystem.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\luafilesystem.1.6.1.1\build\native\luafilesystem.props'))" />
-    <Error Condition="!Exists('packages\luafilesystem.1.6.1.1\build\native\luafilesystem.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\luafilesystem.1.6.1.1\build\native\luafilesystem.targets'))" />
     <Error Condition="!Exists('packages\penlight.0.8.002.9\build\native\penlight.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\penlight.0.8.002.9\build\native\penlight.props'))" />
     <Error Condition="!Exists('packages\penlight.0.8.002.9\build\native\penlight.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\penlight.0.8.002.9\build\native\penlight.targets'))" />
     <Error Condition="!Exists('packages\busted.1.11.1.28\build\native\busted.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\busted.1.11.1.28\build\native\busted.props'))" />
@@ -440,9 +441,11 @@
     <Error Condition="!Exists('packages\nanomsg.0.3.0613.8\build\native\nanomsg.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\nanomsg.0.3.0613.8\build\native\nanomsg.targets'))" />
     <Error Condition="!Exists('packages\lua.5.3.0003.01\build\native\lua.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.3.0003.01\build\native\lua.props'))" />
     <Error Condition="!Exists('packages\lua.5.3.0003.01\build\native\lua.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\lua.5.3.0003.01\build\native\lua.targets'))" />
+    <Error Condition="!Exists('packages\luafilesystem.1.6.1.2\build\native\luafilesystem.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\luafilesystem.1.6.1.2\build\native\luafilesystem.props'))" />
+    <Error Condition="!Exists('packages\luafilesystem.1.6.1.2\build\native\luafilesystem.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\luafilesystem.1.6.1.2\build\native\luafilesystem.targets'))" />
   </Target>
   <ItemGroup>
-    <LuaTests Include="$(SolutionDir)spec\*" />
+    <LuaTests Include="$(SolutionDir)spec\**\*" />
   </ItemGroup>
   <ItemGroup>
     <LuaSource Include="$(SolutionDir)nml\**\*.*" />
