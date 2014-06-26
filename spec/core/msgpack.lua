@@ -67,8 +67,6 @@ describe ("msg_mspack operation #msg_mspack", function()
 
 	end)
 
-
-
 	it("given an nml_msg, it can parse the msgpack encoded data and turn it into a lua table.", function()
 		ret_table = msgpack.deser(msg_ud, msg_start_index)
 		assert.is_equal(test_table, ret_table)
