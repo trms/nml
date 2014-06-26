@@ -5,11 +5,13 @@ This document outlines the details of NML's MessagePack support.
 Provide an efficient, binary-compatible, seamless and extensible encoding and decoding mechanism as part of NML.
 
 ###1.2 Current problem
-The current messaging implementation relies on the MediaCircus/application layer to transform a message into a single string. This is a two step process that first uses a JSON parser to transform a lua table and its content into JSON representation. NML then sees the JSON table as a regular string type.
+The current messaging implementation relies on the MediaCircus/application layer to transform a message into a string. 
 
-This approach doesn't support plain old data (POD) buffers, typically represented by userdata or lightuserdata types. Those buffers get lost in the JSON processing. 
+This approach doesn't support plain old data (POD) buffers, typically represented by userdata or lightuserdata types.
 
-It is also not the most efficient, as the buffer needs to be copied on every step. Here is a typical send operation:
+It is also not the most efficient, as the buffer needs to be copied on every step. 
+
+Here is a typical send operation using a JSON serializer (could be a pl.pretty.write, or some other mechanism):
 
 +---------------+    1.{lua_table}    +---------------+                                 
 |               +-------------------> |               |                                 
@@ -39,7 +41,289 @@ The receive operation has a similar workflow:
 
 In this case nanomsg allocates a buffer to receive the incoming data. It then pushes the result to lua using pushlstring. JSON is then called to rebuild the original table.
 
-###1.3 Notes on MessagePack
+---
+
+#2. solutions
+Use a serializer as an independent C module with a lua binding. It will be made into a NuGet that can be imported by NML and any other modules.
+
+###2.1 Embed the serializer into NML through NML's lua layer, and provide nanomsg's C low level memory management callbacks to the serializer.
+
+Note: Application = MediaCircus filter (typically)
+
+                                                                        message                                                             
++---------------+                     +---------------+ 3.{lua_table},(empty)       +---------------+                    +---------------+
+|               |                     |               +---------------------------> |               |   message.alloc,   |               |
+|               |    1.{lua_table}    |               |                             |  Serializer   | 4.message.realloc  |  Serializer   |
+|  Application  +-------------------> |    NML Lua    |          message            |     Lua       | <----------------> |       C       |
+|      Lua      |                     |               |        5.(filled)           |               |                    |     (dll)     |
+|               |                     |               | <---------------------------+               |                    |               |
++---------------+                     +-------------+-+                             +---------------+                    +---------------+
+                                                    |                                                                                     
+                                        ^           |   message                                                                           
+                                        |           | 6.(filled)                                                                          
+                              2.message |           |                                                                                     
+                               (empty)  |           v                                                                                     
+                                        |                                                                                                 
+                                      +-+-------------+   message.pbuffer, +---------------+                                              
+                                      |               |   message.len,     |               |                                              
+                                      |               | 7.message.header   |    nanomsg    |                                              
+                                      |    NML C      +------------------> |     (dll)     |                                              
+                                      |    (dll)      |                    |               |                                              
+                                      |               |                    |               |                                              
+                                      +---------------+                    +-------+-------+                                              
+                                                                                   |                                                      
+                                                                                   |                                                      
+                                                                                   v                                                      
+                                                                                 socket                                                   
+---
+
+#3 Message format
+##3.1 Lua representation
+A message is a userdata allocated by NML.
+The userdata has a metatable also created and assigned by NML. 
+
+The NML.Lua layer can populate the message's metatable.
+*(to be confirmed) NML does not define the __newindex function on the message userdata's metatable. So it must create a placeholder for all exported msg functions.
+
+A Message's metatable exposes the following API:
+
+    {
+      __gc,
+      __len,
+      alloc,      // allows a 3rd party C module to populate the pvBuffer
+      realloc,    // ""
+      free,       // allows a 3rd party C module to manage the pvBuffer (overwrite it by first deleting it...)
+      getbuffer,  // allows a 3rd oarty C module to retrieve pvBuffer
+      getheader,  // allows a 3rd party C module to retrieve pvHeader
+    }
+
+The default implementation uses the following callbacks:
+
+    msg.alloc = nml.msg_alloc
+    msg.free = nml.msg_free
+    msg.realloc = nml.msg_realloc
+    getmetatable(msg).__len = nml.msg_getsize
+    msg.getbuffer = nml.msg_getbuffer
+    msg.getheader = nml.msg_getheader
+
+When NML allocates a msg_ud it will call the proper internal functions and populate the msg_ud metatable with the appropriate memory allocation functions. A default implementation for each of the metatable functions is provided by NML (api contract is guaranteed).
+
+###3.2 C representation
+
+    struct SNmlMessage {
+      void* pvBuffer;
+      uint64_t ui64BufferSize;
+      void* pvHeader;
+      uint64_t ui64HeaderSize;
+    };
+
+The header is propagated to lua as a string type, but internally is handled similarly to pvBuffer. There are no restrictions on the pvHeader's payload. It is only constrained by the underlying transport module (nanomsg).
+
+---
+
+#4 NML api
+Note: It's interesting to appreciate here that a function callback made from one C module will be executed in another C module, using the Lua stack as a middle man.
+
+###4.1 nml.new_msg()
+Creates a new Message userdata object. Specifies a type name common to all messages, in order to later use luaL_checkudata(..., name).
+
+Returns a new message userdata if successful, nil and an error message string in case of error.
+
+---
+
+###4.2 nml.msg_fromstring(msg_ud, msg_string)
+Copies msg_string's content into SNmlMessage.pvBuffer. 
+Uses lua_tolstring to determine the size of the copied buffer, sets SNmlMessage.ui64Size.
+
+Returns the message userdata if successful, nil and an error message string in case of error.
+
+---
+
+###4.3 nml.msg_getsize(msg_ud)
+Gets SNmlMessage.ui64Size, the size of the data pointed to by SNmlMessage.pvBuffer.
+
+Returns the size if successful, nil and an error message string in case of error.
+
+#####Implementation
+
+    SNmlMessage* pMessage = luaL_checkudata(L, -1, metatable_name_str);
+    lua_pushinteger(L, pMessage->ui64Size);
+    return 1;
+
+---
+
+###4.4 nml.msg_getbuffer
+Returns the Message's buffer (as a lightuserdata) and its size. This is typically used by 3rd party C modules to access the payload without needing to case the msg_ud into a C struct.
+
+    SNmlMessage* pMessage = luaL_checkudata(L, 1, metatable_name_str);
+    lua_pushlightuserdata(L, pMessage->pvBuffer);
+    lua_pushinteger(L, pMessage->ui64BufferSize);
+    return 2;
+
+---
+
+###4.5 nml.msg_alloc(msg_ud, size)
+Allocates a buffer of the specified size in SNmlMessage.
+Calls nn_allocmsg, and sets SNmlMessage.pvBuffer.
+Sets SNmlMessage.ui64Size.
+
+Returns Message userdata if successful, or nil and an error message string in case of error.
+
+---
+
+###4.6 nml.msg_realloc(msg_ud, size)
+Reallocates a buffer of the specified size in SNmlMessage.
+Calls nn_reallocmsg, and sets SNmlMessage.pvBuffer.
+Sets SNmlMessage.ui64Size.
+
+Returns Message userdata if successful, or nil and an error message string in case of error.
+
+---
+
+###4.7 nml.msg_free(msg_ud)
+Frees the SNmlMessage.pvBuffer memory, and sets SNmlMessage.ui64Size to 0.
+
+Returns true if it freed the message, false if SNmlMessage.pvBuffer is NULL. Returns nil and an error message string in case of error.
+
+#####Implementation
+
+    SNmlMessage* pMessage = luaL_checkudata(L, -1, metatable_name_str);
+    lua_getmetatable(L, 1);
+    lua_getfield(L, -1, "free");
+    lua_pushlightuserdata(L, pMessage->pvBuffer);
+    lua_call(L, 1, 0); // calls nn_freemsg in this example
+
+    // zero out the pointer and its size
+    pMessage->pvBuffer = NULL;
+    pMessage->ui64Size = 0;
+    
+    // return the ud
+    lua_settop(L, 1);
+    return 1;
+
+---
+
+###4.8 nml.msg_setheader(msg_ud, header_str)
+Allocates a header buffer, and puts the specified header string into the message's header buffer. Sets the message's header size to match the lua string size, not adding the terminator.
+
+    SNmlMessage* pMessage = luaL_checkudata(L, -1, metatable_name_str);
+    size_t sizeHeader;
+    void* pvHeader = luaL_checklstring(L, 2, &sizeHeader);
+
+    // Calls nn_allocmsg, and sets SNmlMessage.pvBuffer.
+    pMessage->pvHeader = nn_allocmsg(sizeHeader);
+
+    memcpy(pMessage->pvHeader, pvHeader, sizeHeader);
+    pMessage->ui64HeaderSize = sizeHeader;
+
+    // return the msg_ud
+    lua_settop(L, 1);
+    return 1;
+
+---
+
+###4.9 nml.msg_getheader(msg_ud)
+Returns the message's header as a lua string.
+
+    SNmlMessage* pMessage = luaL_checkudata(L, 1);
+
+    if (pMessage->pvHeader!=NULL) {
+      lua_pushlstring(L, pMessage->pvHeader, pMessage->ui64HeaderSize);
+      return 1;
+    }
+
+---
+
+###4.10 nml.send
+Sends a Message to an SP socket.
+
+    nml.send(socket, msg_ud, flags)
+
+#####parameters
+- socket (number): the SP socket
+- msg_ud (userdata): the Message to send
+- flags (number): set to NN_DONTWAIT if non-blocking, or 0.
+
+#####return values
+success:
+- [1]: (number) 0
+
+error: 
+- [1]: nil
+- [2]: (string) a helpful description of the error
+
+#####remarks
+The msg_ud's buffer and header memory will be freed and set to NULL by the send.
+
+---
+
+###4.11 nml.recv
+Receives a message coming from an SP socket and pushes it to lua as a string buffer.
+
+     local msg_ud = nml.recv(socket, flags)
+
+#####parameters
+- socket (number): the SP socket.
+- flags (number): set to NN_DONTWAIT if non-blocking, or 0.
+
+#####return values
+success:
+- [1]: (userdata) the Message
+
+error:
+- [1]: nil
+- [2]: (string) a helpful description of the error
+
+#####Implementation
+
+    // in[1]: socket
+    // in[2]: flags
+
+    nn_msghdr hdr;
+    SNmlMessage* pMessage;
+    struct nn_iovec iov;
+    struct nn_msghdr hdr;
+
+    // create a new message
+    new_msg(L);
+    pMessage = luaL_checkudata(L, -1, message_metatable_str);
+
+    // put it at L[3]
+    lua_insert(L, 3);
+
+    iov.iov_base = pMessage->pvBuffer;
+    iov.iov_len = NN_MSG;
+
+    hdr.msg_iov = &iov;
+    hdr.msg_iovlen = 1;
+
+    hdr.msg_control = pMessage->pvHeader;
+    hdr.msg_controllen = NN_MSG;
+
+    pMessage->ui64BufferSize = nn_recv(socket, &hdr, flags);
+
+    // retrieve the header size
+    pMessage->ui64HeaderSize = nn_chunk_size(pMessage->pvHeader);
+
+    // return the msg_ud
+    lua_pushvalue(L, 3);
+    return 1;
+
+---
+
+#5 Using MessagePack as a serializer
+MessagePack will be made into a NuGet that can be imported by NML and any other modules requiring lua C MessagePack support. 
+
+MessagePack's C core will access the memory allocators through the message's alloc, realloc and free api.
+
+###5.1 Implementation details
+We need to modify the C module to use the Message's memory allocator callbacks in its pack and unpack methods.
+
+Add a lua_State* parameter to mp_buf_new and mp_cur_new, as well as functions that call free and realloc.
+
+Wrap the memory allocator functions and branch code to the desired allocation mechanism (default malloc/free vs message.alloc/free etc.).    
+
+###5.2 Notes on MessagePack
 
 There are some important aspects of MessagePack that we should be aware of.
 
@@ -49,389 +333,89 @@ There are some important aspects of MessagePack that we should be aware of.
 - MessagePack encoding and decoding are two step processes. They both allocate a temporary internal buffer to store the encoded data, which is then pushed to lua as a string buffer.
 - MessagePack will need to be updated to handle our way of serializing binary data (lua userdata).
 
-#2. solutions
+---
 
-I propose that MessagePack remains an independent C module with a lua binding. It will be made into a NuGet that can be imported by NML and any other modules requiring lua C MessagePack support. This means that buffers still need to be exposed in lua. Possible ways to handle this situation are detailed below; 
+###5.3 messagepack.pack({table_to_pack}, msg_ud)
+Packs the specified table into the msg_ud.
+Pass the Message's userdata to the pack call. At this point the message should be empty. 
+If the message is not empty, then the message's content will be freed using the Message's own free function.
+Access the Message's memory by using the Message's lua metadata functions.
 
-Note: I'm going to refer to the layer on top of NML as "the application" for simplicity.
+    lua_getmetatable(L, 1);
+    lua_getfield(L, -1, "alloc");
+    lua_pushvalue(L, 1); // the ud
+    lua_pushinteger(L, 1024); // pretend it needs a 1k buffer
 
-###2.1. Use MessagePack at the application level, by swapping out the JSON encoding. 
-The application will transform the lua types, including userdata, through MessagePack.
-                                                                                                                  socket      
-                                                                                                                     ^        
-                                                                                                                     |        
-                                                                                                                     |        
-                                                                                                                     |        
-+---------------+                     +---------------+                  +---------------+                   +-------+-------+
-|               |                     |               |                  |               |                   |               |
-|               |    1.{lua_table}    |               | 4."[{lua_table}]"|               | 5."[{lua_table}]" |    nanomsg    |
-|  Application  +-------------------> |    NML Lua    +----------------> |    NML C      +-----------------> |     (dll)     |
-|      Lua      |                     |               |                  |               |                   |               |
-|               |                     |               |                  |               |                   |               |
-+---------------+                     +--+------------+                  +---------------+                   +---------------+
-                                         |                                                                                    
-                                         |        ^                                                                           
-                            2.{lua_table}|        |                                                                           
-                                         |        | 3."[{lua_table}]"                                                         
-                                         |        |                                                                           
-                                         v        |                                                                           
-                                                  |                                                                           
-                                      +-----------+---+                  +---------------+                                    
-                                      |               |                  |               |                                    
-                                      |  MessagePack  |                  |  MessagePack  |                                    
-                                      |     Lua       | <--------------> |     C  (dll)  |                                    
-                                      |               |                  |               |                                    
-                                      |               |                  |               |                                    
-                                      +---------------+                  +---------------+                                    
+    // allocate the buffer
+    lua_call(L, 2, LUA_MULTRET); // the ud and its size
+    
+    // get the pbuf
+    lua_settop(L, 2); // msg_ud, mt
+    lua_getfield(L, 2, "getbuffer");
+    void* pvBuffer = lua_touserdata(L, -1);
 
-Similarly to JSON, MessagePack outputs its encoded buffer as a string. The string can then be passed into NML, same as it did with JSON.
+    // fill the pbuf
+    memcpy(pvBuffer, ...);
 
-**+**
+    ...
 
-- Quick to implement.
-- Delegates responsibilities to the higher level code.
-- application has more control over the protocol.
-
-**-**
-
-- Number of times the original data is present in memory: 3+1 (MessagePack temp buffer).
-- No benefits in terms of efficiency.
-
-###2.2 Embed MessagePack into NML through NML's Lua layer, without modifying MessagePack.
-
-Sending data: NML's entry points accept regular lua types, including userdata types. The application sends lua types directly to NML's api (numbers, strings, tables...). NML's lua layer then forwards the lua data to the desired protocol encoder (MessagePack), which encodes the lua data into a lua string buffer. NML's lua layer then passes the resulting string buffer to NML's C module.
-
-**+**
-
-- A unified, consistent way to transfer buffers between MediaCircus (MC) modules.
-- Control over the protocol is tighter, and at the MC level.
-- Ability to swap out the protocol if we find something better, or if the user needs another protocol (ex: protobuf)
-- The MC/application no longer needs to encode the data prior to calling NML, simplifies the MC/application code.
-
-**-**
-
-- Number of times the original data is present in memory: 3+1.
-- No benefits in terms of efficiency.
-
-###2.3 Embed MessagePack into NML through NML's lua layer, and modify MessagePack to output a recycled userdata buffer.
-
-This goes a step further than point 2 above. MessagePack is still embedded into NML, but it no longer copies its packed buffer into a lua string buffer, saving a buffer copy. MessagePack exports its packed buffer as userdata, which is then read directly by nanomsg. 
-     
-**+**
-
-- Number of times the origina data is present in memory: 3.
-- Slightly more efficient than 1 and 2.
-
-**-**
-
-- Need to implement a buffer management mechanism inside MessagePack's C code, to recycle the buffers safely.
-- The MessagePack buffer is still copied by NML.
-- MessagePack output userdata is now opaque to lua.
-
-###2.4 Embed MessagePack into NML through NML's lua layer, and leverage NML's buffer management api.
-
-MessagePack packs the data into a memory buffer that belongs to NML. This buffer is then sent over the SP socket through a zero-copy mechanism. 
-   
-**+**
-
-- Very efficient approach, only a single copy is necessary.
-
-**-**
-
-- Need the ability in MessagePack to identify the buffer size, without packing the data. Alternatively to speed up development we could pack the data into a temporary "recycled" memory area and just extract the size.
-- The lua workflow is different. MessagePack needs to parse the input lua table to extract the size. Then the lua layer needs to ask NML's C module for a buffer of the required size, and forward that buffer to MessagePack's packer api. 
-- MessagePack outputs userdata, its output is now opaque to lua.
-
-###2.5 Embed MessagePack into NML through NML's lua layer, and provide nanomsg's C low level memory management callbacks to MessagePack.
-
-+---------------+                     +---------------+ 3.{lua_table}, memory_fns   +---------------+                 +---------------+
-|               |                     |               +---------------------------> |               |                 |               |
-|               |    1.{lua_table}    |               |                             |  MessagePack  |                 |  MessagePack  |
-|  Application  +-------------------> |    NML Lua    |                             |     Lua       | <-------------> |       C       |
-|      Lua      |                     |               |        4.userdata           |               |                 |     (dll)     |
-|               |                     |               | <---------------------------+               |                 |               |
-+---------------+                     +-------------+-+                             +---------------+                 +---------------+
-                                                    |                                                                                  
-                                        ^           |                                                                                  
-                                        |           | 5.userdata                                                                       
-                         2. memory_fns  |           |                                                                                  
-                                        |           v                                                                                  
-                                        |                                                                                              
-                                      +-+-------------+                             +---------------+                                  
-                                      |               |                             |               |                                  
-                                      |               |         6.userdata          |    nanomsg    |                                  
-                                      |    NML C      +---------------------------> |     (dll)     |                                  
-                                      |    (dll)      |                             |               |                                  
-                                      |               |                             |               |                                  
-                                      +---------------+                             +-------+-------+                                  
-                                                                                            |                                          
-                                                                                            |                                          
-                                                                                            v                                          
-                                                                                          socket                                       
-
-This would require NML's lua layer to fetch the memory allocation callbacks from NML's C module. Then pass these callbacks to MessagePack. Both modules would need to remain in memory as long as they are referencing each other.
-
-**+**
-
-- The most efficient approach.
-
-**-**
-
-- Need to modify CMsgPack to support custom allocators.
-- Need the ability to pass C style callbacks between two lua C modules, through the lua api. 
-- Need to find an elegant way to implement this and not hack it through a backdoor.
-
---- 
-
-#3. memory management callbacks implementation details
-###3.1 nml
-    nml.allocmsg, nml.freemsg, nml.reallocmsg
-
-They're the equivalent to C's malloc, free, realloc, and will be added to the NML binding. No need to get into the details these are simple calls.
-
-###3.2 MessagePack
-We need to modify the C module to accept the above callbacks in its pack and unpack methods.
-The callbacks will always go through the lua layer before executing their C code, which will incur some overhead:
-
-    MessagePack --> Lua --> NML
-              (pcall)  
-
-Add a global singleton structure with the Lua state, and the memory management functions.
-
-    static struct MessagePack{
-        lua_State* L;
-        fn_malloc malloc;
-        fn_free free;
-        fn_realloc realloc;
-    }g_MessagePack;
-
-Add a global lua_State* accessible to the allocators. When pack/unpack is called, set the global pointers to point to malloc, realloc, free. Pack example:
-
-     static int mp_pack(lua_State* L)
-     {
-         // not a huge fan of this!
-         g_MessagePack.L = L;
-
-         // look for the allocators
-         if L(-1) is a table and the table contains the malloc, free, and realloc functions then
-             set the function pointers in g_MessagePack
-
-         ...
-
-         // we can't keep this context around
-         g_MessagePack.L = NULL;
-
-         // reset the malloc, realloc, free to point to the C default implementation
-     }
-
-Add a lua-based malloc, realloc and free functions. These need to pcall the specified lua function. Alloc example:
-    void* l_alloc(size_t size)
-    {
-       void* pv;
-       size_t len;
-
-       // this will execute code located in NML's C module
-       lua_pushinteger(size);
-       lua_call(g_L, 1, LUA_MULTRET);
-
-       pv = lua_tolstring(g_L, -1, &len);
-       assert(len==size);
-       return pv;
-    }
-
-Modify the MessagePack code to use the new memory allocation functions in g_MessagePack. Replace all malloc, free, realloc.
-
-###3.3 messagepack.pack(..., {malloc=fn1, realloc=fn2, free=fn3})
-if the stack's top parameter is a table, and the table contains a malloc function and a realloc function and a free function then
-- set the malloc, realloc, free global pointers to point to the specified callbacks.
+    // return the Message
+    lua_settop(L, 1);
+    return 1;
 
 ---
 
-#4. Binary serialization
-We need the ability to serialize lua (light)userdata (ud).
-The problem with ud is that we don't know its size, there's no standard mechanism to determine the size of the data pointed to by a ud payload.
+###5.4 MessagePack.unpack(msg_ud)
+Unpacks the msg_ud into a table and returns the table. 
+Does not free msg_ud.
 
-We'll implement our own custom payload package. This package will specify a buffer (ud), the buffer type as a string and its size: 
+    lua_getmetatable(L, 1);
+    lua_getfield(L, -1, "getbuffer");
+    lua_call(L, 1, LUA_MULTRET);
 
-    { buffer = <some_userdata_value>, buffer_ud_type = "dsx_filter_buffer", buffer_ud_size = <the_size> }
+    void* pvBuffer = lua_touserdata(L, -1);
+
+    // unpack pvBuffer
+
+    // return the table
+    return 1;
+
+---
+
+#6 generic binary serialization
+This pertains to the issue of non-NML userdata, and to how this kind of userdata can be serialized when nested inside tables. 
+A good example of this is a DSX buffer representing picture data. We need the ability to transfer this userdata over NML, without requiring DSX to publish it using a NML formatting (SNmlMessage).
+
+We'll implement our own custom payload package:
+
+    { 
+      buffer_ud = <some_userdata_value>, 
+      buffer_ud_type = "dsx_filter_buffer", 
+      buffer_ud_size = <the_size>,
+      buffer_ud_allocator = "nml_msg",
+    }
 
 This binary serialization representation will be universal across all MC modules.
 
-###4.1 MessagePack binary serialization
-In messagepack.pack:
-- if the type is a table then parse the table for the "buffer=", "buffer_ud_type=", "buffer_ud_size="" fields. 
--- if found then encode the specified buffer as a binary format. Preserve the table.
-TODO: continue here...
----
+If MessagePack encounters a nested userdata type, it should look for the type, size and allocator fields. If it finds all fields then it can go ahead and serialize it in its packed buffer, and maintain the table descriptor fields. It should set the buffer_ud_allocator to "MessagePack".
 
-#5. protocol disambiguation
-Protocol selection is dynamic (specified on every send, and returned on every receive). We'll use nanomsg's control data to send the protocol type.
-
-The protocol type will be specified as a string. Protocol disambiguation should be flexible, and not expect an exact, case sensitive string. This is handled at the lua level.
-
-For example the following protocol type strings should all be resolved to "MessagePack":
-
-- lua-cmessagepack
-- messagepack
-- lua-messagepack
-- msgpack
-- MessagePack
-etc...
-
----
-
-#6. API
-###6.1 nml.allocmsg
-
-    local pv = nml.allocmsg(size)
-
-Allocates a nanomsg buffer to be used in zero-copy SP socket transfers.
-
-#####parameters
-
-size (number): the desired size in bytes.
-
-#####return values
-
-success:
-
-- [1]: ((light)userdata) the pointer to the allocated nanomsg memory buffer
-
-error:
-
-- [1]: nil
-- [2]: (string) a helpful description of the error
-
-#####remarks
-
-This is essentially a malloc of a custom nanomsg-defined structure, with the pointer being offset to obfuscate control data.
-
----
-
-###6.2 nml.freemsg
-
-    nml.freemsg(pv)
-
-Frees a memory buffer previously allocated by nml.allocmsg.
-
-#####parameters
-
-pv ((light)userdata): a memory buffer allocated by nml.allocmsg
-
-#####return values
-
-success:
-
-- [1]: (number) 0
-
-error:
-
-- [1]: nil
-- [2]: (string): a helpful description of the error
-
-#####remarks
-
-The supplied pv will be offset to point to the control data. If the buffer passed in parameter is not a nanomsg buffer this method's behaviour is unknown.
-
----
-
-###6.3 nml.send
-
-    nml.send(socket, buffer, flags, size, protocol)
-
-Sends a buffer to an SP socket, using the specified protocol.
-
-#####parameters
-
-- socket (number): the SP socket
-- buffer ((light)userdata or string): the buffer to send
-- flags (number): set to NN_DONTWAIT if non-blocking, or 0.
-- size (optional, number): the size in bytes, or the NN_MSG constant, or nil.
-- protocol (optional, string): the protocol/encoder used to pack the buffer.
-
-#####return values
-    
-success:
-
-- [1]: (number) 0
-
-error: 
-
-- [1]: nil
-- [2]: (string) a helpful description of the error
-
-#####remarks
-Set size to NN_MSG to send using the zero-copy mechanism.
-
-#####implementation
-If the buffer type is a string then
-- get lua string size
-- nn_allocmsg(lua_str_size)
-- copy the string into the buffer
-- nn_allocmsg the controldata (sizeof("string"))
-- copy "string" into control data
-
-If the buffer type is a userdata and the size is NN_MSG and the protocol is not nil then
-- fill the msghdr with the buffer and size (NN_MSG)
-- nn_allocmsg the control data (sizeof(protocol)) // the size of the string used to specify the protocol
-- copy the protocol string into the control data
-
-Else If the buffer type is a userdata and the size is > 0 and protocol is not nil then
-- nn_allocmsg(size)
-- copy the data into the buffer
-- nn_allocmsg(sizeof(protocol))
-- copy the protocol string into control data
-
-All success cases:
-- nn_sendmsg(msghdr, flags)
-
----
-
-###6.4 nml.recv
-
-     local buf, received = nml.recv(socket, flags, ud, size)
-
-Receives a message coming from an SP socket and pushes it to lua as a string buffer.
-
-#####parameters
-
-- socket (number): the SP socket.
-- flags (number): set to NN_DONTWAIT if non-blocking, or 0.
-- ud ((light)userdata): points to a (light)userdata, or nil. 
-- size (number): size in bytes, or NN_MSG, or nil.
-
-#####return values
-
-success:
-
-- [1]: ((light)userdata or string)the buffer
-- [2]: (number) the number of bytes written to the buffer
-
-error:
-
-- [1]: nil
-- [2]: (string) a helpful description of the error
+I'll update existing DSX modules to reflect this formatting.
 
 ---
 
 #7. work breakdown
 
-1. Write binary serialization tests for cmsgpack.
-2. Implement binary serialization in cmsgpack.
---> M1: binary serialization tested successfully
+1. Write serialization lua tests for cmsgpack.
+2. Write nml.msg* api lua tests.
+--> M1: lua tests code complete.
 
-**********
-********** NOTE: unpack frees the buffer
-********** allocators part of self, not every call
-********** 
+3. Implement nml message functions.
+4. test against item 2.
+--> M2: nml message api completed.
 
-3. Write MessagePack/NML memory allocation tests, using Pack/Unpack and passing malloc/realloc/free.
-4. Implement NML memory allocation binding. (needed for next)
-5. Implement MessagePack memory allocators.
---> M2: allocators tested successfully
---> M3: cmsgpack code complete
+5. Implement nml MessagePack.
+6. test against item 1.
+--> M3: MessagePack done.
 
-4. Write NML dynamic protocol selection tests, test JSON, MessagePack, strings.
-5. Implement NML dynamic protocol selection
---> M2 dynamic protocols tested successfully.
---> RC1 all modules code complete
+7. Write a complete lua test script to test all functionalities.
+--> M4: all done
