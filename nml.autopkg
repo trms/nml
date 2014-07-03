@@ -2,7 +2,7 @@ nuget {
 	nuspec {
 		id = nml;
 		title: nml - nanomsg module for Lua;
-		version: 1.0.000.20;
+		version: 1.0.000.21;
 		authors: {coapp, Andrew Starks, Christian Bechette, Tightrope Media Systems};
 		owners: {Tightrope Media Systems};
 		licenseUrl: "http://opensource.org/licenses/MIT";
@@ -55,7 +55,7 @@ nuget {
 		[win32, v100, Debug] {
 			lualib: {"Win32\Debug\nml\**\*"};
 		};
-		lua: {".\mediacircus\**\*"};
+		lua: {".\nml\**\*"};
     };
 	targets {
 		AfterBuild {
