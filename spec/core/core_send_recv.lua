@@ -1,5 +1,5 @@
 --local llthreads = require'llthreads'
-local nml=require'nml'
+local nml=require'nml.core'
 local events = require'nml.events'
 --local pw=require'pl.pretty'.write
 require'busted'
@@ -22,15 +22,19 @@ nml.connect(pair_2, PAIR_ADDR)
 local msg1_ud, msg1_str ,msg_type1, msg2_ud, msg2_str, msg_type2
 
 
--- describe("Send tests #send #recv", function()
+describe("Send tests #send #recv", function()
 
 
--- 	it("can send and recv a simple text message, without defining the buffer length.", function()
--- 		msg1 = "ABC"
+	it("can send a simple text message, without defining the buffer length.", function()
+		msg1 = "ABC"
 		
--- 		assert.is_truthy(nml.send(pair_1, msg1))
-		
--- 		msg2, msg_type2 = nml.recv(pair_2)
+		assert.is_truthy(nml.send(pair_1, msg1))
+	end)
+	it("can recv a simple text message.", function()
+		msg2, msg_type2 = nml.recvmsg(pair_2)
+		assert.is_truthy(msg2)
+		print("msg2", msg2)
+	end)
 
 -- 		it("receives a message as userdata", function()
 -- 			assert.not_falsy(msg2)
@@ -40,7 +44,7 @@ local msg1_ud, msg1_str ,msg_type1, msg2_ud, msg2_str, msg_type2
 -- 		it("receives a message type as the 2nd return value", function()
 -- 			assert.is_equal("string", msg_type2)
 -- 		end)
--- 	end)
+	
 	
 -- 	it("converts a message userdata using the nml.tostring() method.", function()
 -- 		msg2_str = nml.tostring(msg2)
@@ -82,4 +86,4 @@ local msg1_ud, msg1_str ,msg_type1, msg2_ud, msg2_str, msg_type2
 -- 		assert.is_truthy(nml.close(pair_2))
 -- 		assert.is_truthy(nml.close(pair_1))
 -- 	end)
--- end)
+end)

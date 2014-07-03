@@ -1,5 +1,5 @@
 local busted = require("busted")
-local nml = require'nml'.core
+local nml = require'nml.core'
 
 local api = {"socket", "close", "setsockopt", "getsockopt", "bind", "connect", "shutdown", "send", "recv", "sendmsg", "recvmsg", "allocmsg", "freemsg", "cmsg", "poll", "errno", "strerror", 
 	"symbol", "symbolinfo", "device", "term", 
@@ -8,6 +8,8 @@ local api = {"socket", "close", "setsockopt", "getsockopt", "bind", "connect", "
 
 local protocols = {"pair", "reqrep", "pubsub", "survey", "pipeline", "bus",
 	pair="pair", reqrep="reqrep", pubsub="pubsub", survey="survey", pipeline="pipeline", bus="bus"}
+
+require'pl.pretty'.write(nml)
 
 describe "testing nml creation #creation" (function()
 	it "is not nil" (function()
