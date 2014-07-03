@@ -2,7 +2,7 @@ nuget {
 	nuspec {
 		id = nml;
 		title: nml - nanomsg module for Lua;
-		version: 1.0.000.21;
+		version: 1.0.000.23;
 		authors: {coapp, Andrew Starks, Christian Bechette, Tightrope Media Systems};
 		owners: {Tightrope Media Systems};
 		licenseUrl: "http://opensource.org/licenses/MIT";
