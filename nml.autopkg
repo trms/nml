@@ -2,7 +2,7 @@ nuget {
 	nuspec {
 		id = nml;
 		title: nml - nanomsg module for Lua;
-		version: 1.0.000.19;
+		version: 1.0.000.20;
 		authors: {coapp, Andrew Starks, Christian Bechette, Tightrope Media Systems};
 		owners: {Tightrope Media Systems};
 		licenseUrl: "http://opensource.org/licenses/MIT";
@@ -27,6 +27,12 @@ nuget {
 
 	files {
 		// declare a lua collection
+		lua : {
+			// copies the whole folder tree.
+			#add-all-files : Items.MediaCircusFiles;
+			// set the destination in the package itself. 
+			#destination : ${build_root}\mediacircus;
+		};
 		lualib : {
 			// copies the whole folder tree.
 			#add-all-files : Items.nmlBin;
@@ -49,11 +55,12 @@ nuget {
 		[win32, v100, Debug] {
 			lualib: {"Win32\Debug\nml\**\*"};
 		};
+		lua: {".\mediacircus\**\*"};
     };
 	targets {
 		AfterBuild {
 			.Copy {
-				DestinationFolder = "$(TargetDir)nml";
+				DestinationFiles = "@(nmlBin->'$(TargetDir)nml\%(RecursiveDir)%(Filename)%(Extension)')";
 				SourceFiles = "@(nmlBin)";
 				SkipUnchangedFiles = true;
 				UseHardlinksIfPossible = true;
