@@ -1,5 +1,5 @@
 --local llthreads = require'llthreads'
-local nml=require'nml.core'
+local nml=require'nml'
 local events = require'nml.events'
 --local pw=require'pl.pretty'.write
 require'busted'
@@ -13,23 +13,18 @@ local PAIR_ADDR = "inproc://pair"
 local msg
 local count
 local sockets 
--- local pair_1 = nml.pair():bind(PAIR_ADDR)
--- local pair_2 = nml.pair():connect(PAIR_ADDR)
 local pair_1 = nml.socket(AF_SP, NN_PAIR)
 nml.bind(pair_1, PAIR_ADDR)
 local pair_2 = nml.socket(AF_SP, NN_PAIR)
 nml.connect(pair_2, PAIR_ADDR)
 local msg1_ud, msg1_str ,msg_type1, msg2_ud, msg2_str, msg_type2
 
-
 describe("Send tests #send #recv", function()
-
-
 	it("can send a simple text message, without defining the buffer length.", function()
 		msg1 = "ABC"
-		
 		assert.is_truthy(nml.send(pair_1, msg1))
 	end)
+
 	it("can recv a simple text message.", function()
 		msg2, msg_type2 = nml.recvmsg(pair_2)
 		assert.is_truthy(msg2)

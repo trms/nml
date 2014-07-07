@@ -30,7 +30,6 @@
 int l_send(lua_State* L)
 {
 	size_t sizeBuffer;
-	void* pData;
 
 	int socket;
 	// message
@@ -40,24 +39,42 @@ int l_send(lua_State* L)
 	const char * msg;
 	int flags;
 	int result;
-
+	void* pvChunk;
+	
+	struct nn_iovec iov;
+	struct nn_msghdr hdr;
 	
 	socket = luaL_checkint(L, P1); // the socket
 	flags = (!lua_isnoneornil (L, P3) ) ?  luaL_checkint(L, P3) : 0; // flags
 	msg = luaL_tolstring(L, P2, &sizeBuffer); //puts a new string at -1
-	
-	
 
-	
-	
 	// alloc the message, add the terminator since lua won't
-	pData = nn_allocmsg(sizeBuffer, 0); // use default allocator
-	if (pData!=NULL) {
+	pvChunk = nn_allocmsg(sizeBuffer, 0);
+
+	iov.iov_base = &pvChunk;
+	iov.iov_len = NN_MSG;
+
+	hdr.msg_iov = &iov;
+	hdr.msg_iovlen = 1;
+
+#ifdef CONTROL
+	hdr.msg_controllen = NN_MSG;
+	pvChunk = nn_allocmsg(sizeof("my_protocol"), 0);
+	hdr.msg_control = &pvChunk;
+#else
+	hdr.msg_controllen = 0;
+	hdr.msg_control = NULL;
+#endif
+
+	if (iov.iov_base!=NULL) {
 		// copy the message
-		memcpy(pData, msg, sizeBuffer);
-		
+		memcpy(*(void**)iov.iov_base, msg, sizeBuffer);
+#ifdef CONTROL
+		// copy the header
+		memcpy(pvChunk, "my_protocol", sizeof("my_protocol"));
+#endif
 		// this will free the pData
-		result = nn_send(socket, &pData, NN_MSG, flags);
+		result = nn_sendmsg (socket, &hdr, flags);
 		if (result != -1 )
 			lua_pushinteger(L, result);
 		else
