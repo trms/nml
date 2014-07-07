@@ -232,7 +232,7 @@
     <ClCompile Include="src\symbolinfo.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="chunk.c">
+    <ClCompile Include="src\chunk.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
   </ItemGroup>

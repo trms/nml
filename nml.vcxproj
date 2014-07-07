@@ -356,9 +356,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="chunk.c" />
     <ClCompile Include="src\allocmsg.c" />
     <ClCompile Include="src\bind.c" />
+    <ClCompile Include="src\chunk.c" />
     <ClCompile Include="src\close.c" />
     <ClCompile Include="src\cmsg.c" />
     <ClCompile Include="src\connect.c" />
