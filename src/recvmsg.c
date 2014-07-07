@@ -50,14 +50,12 @@ int l_recvmsg(lua_State* L)
 	iov.iov_base = &msg_buff;
 	iov.iov_len = NN_MSG;
 	msg.msg_control = &msg_ctrl;
+
 	msg.msg_controllen = NN_MSG;
 	//hdr.msg_control = NULL;
-
+	
 	msg.msg_iov = &iov;
 	msg.msg_iovlen = 1;
-
-	
-	
 	
 	//get the socket and flags from Lua
 	s = luaL_checkint(L, P1);
@@ -66,7 +64,6 @@ int l_recvmsg(lua_State* L)
 	//do the work
 	
 	recvd_bytes = nn_recvmsg (s, &msg, 0);
-
 
 	if (recvd_bytes !=-1) {
 		hdr = NN_CMSG_FIRSTHDR (&msg);

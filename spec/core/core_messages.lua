@@ -78,11 +78,11 @@ describe ("basic nml_msg operation #nml_msg", function()
 	end) 
 
 	it("will let me specify a header.", function()
-		assert.is_truthy(nml.msg_setheader(msg_ud, "myprotocol"))
+		assert.is_truthy(nml.msg_setheader(msg_ud, "mypr"))
 	end)
 
 	it("will let me retrieve the message's header into a lua string", function()
-		assert.are_equal("myprotocol", nml.msg_getheader(msg_ud))
+		assert.are_equal("mypr", nml.msg_getheader(msg_ud))
 	end)
 
 	it("can reproduce the entire message as a string", function()

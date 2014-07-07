@@ -95,6 +95,7 @@ A Message's metatable exposes the following API:
       free,       // allows a 3rd party C module to manage the pvBuffer (overwrite it by first deleting it...)
       getbuffer,  // allows a 3rd oarty C module to retrieve pvBuffer
       getheader,  // allows a 3rd party C module to retrieve pvHeader
+      setheader,  // allows a 3rd party to set the message header
     }
 
 The default implementation uses the following callbacks:
@@ -109,20 +110,45 @@ The default implementation uses the following callbacks:
 When NML allocates a msg_ud it will call the proper internal functions and populate the msg_ud metatable with the appropriate memory allocation functions. A default implementation for each of the metatable functions is provided by NML (api contract is guaranteed).
 
 ###3.2 C representation
+The buffer is represented using a RIFF formatting. The first 4 bytes are the FCC code, followed by 4 bytes containing the size of the chunk (excluding the FCC and size identifiers), and followed by the chunk itself. 
 
-    struct SNmlMessage {
-      void* pvBuffer;
-      uint64_t ui64BufferSize;
-      void* pvHeader;
-      uint64_t ui64HeaderSize;
-    };
+The payload chunk may be followed by a junk chunk to satisfy alignment requirements.
 
-The header is propagated to lua as a string type, but internally is handled similarly to pvBuffer. There are no restrictions on the pvHeader's payload. It is only constrained by the underlying transport module (nanomsg).
+The FCC code is used to identify the payload type (ex: MSGP for MessagePack). FCC codes used are in the context of MediaCircus, and may clash with registered FCC codes.
+
+    0       4       8                                                         104     108     112       128
+    +-------+-------+----------------------------------------------------------+-------+-------+---------+ 
+    |       |       |                                                          |       |       |         | 
+    |   M   |       |                                                          |   J   |       |         | 
+    |   S   | 0x0060|                                                          |   U   | 0x0010| YYYYYYY | 
+    |   G   |       |                         data                             |   N   |       |         | 
+    |   P   |       |                                                          |   K   |       |         | 
+    |       |       |                                                          |       |       |         | 
+    +-------+-------+----------------------------------------------------------+-------+-------+---------+ 
+
+The RIFF chunk details are hidden from the lua view. alloc, free, realloc all operate on the data portion of the buffer. 
+The nml.msg_* functions will handle RIFF parsing internally. For example, calling nml.msg_alloc will allocate the first 8 bytes, plus the requested size, plus the trailing junk chunk if applicable. It will then return a pointer to the data chunk.
+
+#####buffer access
+The riff chunk format contains all information needed to parse the buffer. Size, type and data.
+
+We'll support allocating the data type before knowing the chunk fourCC code. 
+The fourCC code is considered the 'header' and specifies the data format, and is set by the lua layer through the buffer api.
 
 ---
 
 #4 NML api
 Note: It's interesting to appreciate here that a function callback made from one C module will be executed in another C module, using the Lua stack as a middle man.
+
+  nml_msg
+  msg_alloc
+  msg_realloc
+  msg_free
+  msg_getbuffer
+  msg_getheader
+  msg_fromstring
+  msg_tostring
+  msg_getsize
 
 ###4.1 nml.nml_msg()
 Creates a new Message userdata object. Specifies a type name common to all messages, in order to later use luaL_checkudata(..., name).

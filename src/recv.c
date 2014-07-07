@@ -36,16 +36,27 @@ int l_recv(lua_State* L)
 	//
 	// NOTE: this creates a copy of the data into lua space, which is what we want in this case since we're dealing with command strings
 
+	struct nn_iovec iov;
+	struct nn_msghdr hdr;
+	
 	int iIntermediateResult;
 	void* pData;
+	size_t sizeRecv;
 	int flags = luaL_optint(L, P2, 0); // flags
-	// socket
-	// timeout
-	size_t buff_size =  nn_recv(luaL_checkint(L, P1), &pData, NN_MSG, flags);
 
-	if (buff_size !=-1) {
+	iov.iov_base = &pData;
+	iov.iov_len = NN_MSG;
+
+	hdr.msg_iov = &iov;
+	hdr.msg_iovlen = 1;
+	hdr.msg_control = NULL;
+	hdr.msg_controllen = 0;
+
+	sizeRecv = nn_recvmsg (luaL_checkint(L, P1), &hdr, flags);
+
+	if (sizeRecv !=-1) {
 		// put the string in lua space
-		lua_pushlstring(L, (const char *) pData, buff_size);
+		lua_pushlstring(L, (const char *) pData, sizeRecv);
 
 		// free the nn buffer
 		iIntermediateResult = nn_freemsg(pData);

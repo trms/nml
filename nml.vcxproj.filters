@@ -103,9 +103,6 @@
     <ClCompile Include="src\symbol.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="src\symbol_info.c">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="..\nanomsg\tests\block.c">
       <Filter>nanomsg\tests</Filter>
     </ClCompile>
@@ -202,9 +199,44 @@
     <ClCompile Include="src\FD_xx.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
+    <ClCompile Include="src\nml_msg.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_alloc.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_realloc.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_free.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_getbuffer.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_getheader.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_fromstring.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_tostring.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_getsize.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_setheader.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\symbolinfo.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\chunk.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="..\nanomsg\tests\README">
       <Filter>nanomsg\tests</Filter>
     </None>
@@ -238,5 +270,6 @@
     <None Include="spec\core\core_shutdown.lua">
       <Filter>spec\core</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
