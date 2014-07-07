@@ -42,6 +42,10 @@ int l_nml_msg(lua_State* L)
 	lua_pushcfunction(L, l_msg_free);
 	lua_settable(L, -3);
 
+	lua_pushstring(L, "__len");
+	lua_pushcfunction(L, l_msg_getsize);
+	lua_settable(L, -3);
+
 	lua_pushstring(L, "msg_alloc");
 	lua_pushcfunction(L, l_msg_alloc);
 	lua_settable(L, -3);

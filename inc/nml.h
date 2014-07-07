@@ -22,8 +22,6 @@
 
 #pragma once
 
-//#define CONTROL
-
 #include <Windows.h> // needed for dllmain, and sleep
 #include "stdlib.h"
 #include "lua.h"
@@ -96,6 +94,7 @@ nml_api(msg_setheader)
 nml_api(msg_fromstring)
 nml_api(msg_tostring)
 nml_api(msg_getsize)
+nml_api(msg_frommessage)
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -112,7 +111,7 @@ static struct SnmlApi g_apchApi[] = {{g_achsocket, l_socket}, {g_achclose, l_clo
 	{g_achFD_CLR, l_FD_CLR}, {g_achFD_ISSET, l_FD_ISSET}, {g_achFD_SET, l_FD_SET}, {g_achFD_ZERO, l_FD_ZERO},
 	{g_achnml_msg, l_nml_msg}, {g_achmsg_alloc, l_msg_alloc}, {g_achmsg_realloc, l_msg_realloc}, {g_achmsg_free, l_msg_free}, {g_achmsg_getbuffer, l_msg_getbuffer}, 
 	{g_achmsg_getheader, l_msg_getheader}, {g_achmsg_setheader, l_msg_setheader}, {g_achmsg_fromstring, l_msg_fromstring}, {g_achmsg_tostring, l_msg_tostring}, 
-	{g_achmsg_tostring, l_msg_tostring}, {g_achmsg_getsize, l_msg_getsize}
+	{g_achmsg_getsize, l_msg_getsize}, {g_achmsg_frommessage, l_msg_frommessage}
 };
 static const int g_inmlApis = sizeof(g_apchApi)/sizeof(g_apchApi[0]);
 

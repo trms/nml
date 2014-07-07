@@ -370,6 +370,7 @@
     <ClCompile Include="src\getsockopt.c" />
     <ClCompile Include="src\msg_alloc.c" />
     <ClCompile Include="src\msg_free.c" />
+    <ClCompile Include="src\msg_frommessage.c" />
     <ClCompile Include="src\msg_fromstring.c" />
     <ClCompile Include="src\msg_getbuffer.c" />
     <ClCompile Include="src\msg_getheader.c" />

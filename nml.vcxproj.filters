@@ -235,6 +235,9 @@
     <ClCompile Include="src\chunk.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
+    <ClCompile Include="src\msg_frommessage.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\nanomsg\tests\README">

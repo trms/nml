@@ -40,11 +40,15 @@ int l_recv(lua_State* L)
 	struct nn_msghdr hdr;
 	
 	int iIntermediateResult;
-	void* pData;
 	size_t sizeRecv;
 	int flags = luaL_optint(L, P2, 0); // flags
+	void** ppck;
 
-	iov.iov_base = &pData;
+	// create a new nml message
+	l_nml_msg(L);
+	ppck = (void**)luaL_checkudata(L, -1, "nml_msg");
+
+	iov.iov_base = ppck;
 	iov.iov_len = NN_MSG;
 
 	hdr.msg_iov = &iov;
@@ -54,15 +58,11 @@ int l_recv(lua_State* L)
 
 	sizeRecv = nn_recvmsg (luaL_checkint(L, P1), &hdr, flags);
 
-	if (sizeRecv !=-1) {
-		// put the string in lua space
-		lua_pushlstring(L, (const char *) pData, sizeRecv);
-
-		// free the nn buffer
-		iIntermediateResult = nn_freemsg(pData);
-		assert(iIntermediateResult!=-1); // I don't want to return this to the caller but I should have the ability to spot this problem in debug
-	} else
+	if (sizeRecv==-1) {
 		lua_pushnil(L);
+		lua_pushstring(L, nn_strerror(nn_errno()));
+		return 2;
+	}
 	// result
 	return 1;
 }

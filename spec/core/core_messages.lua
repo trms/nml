@@ -1,7 +1,6 @@
 --local llthreads = require'llthreads'
 local nml=require'nml'
 local events = require'nml.events'
---local pw=require'pl.pretty'.write
 require'busted'
 
 local AF_SP = nml.symbols.AF_SP.value
@@ -26,6 +25,7 @@ local message_api = {
 	"msg_getbuffer",	-- gets the buffer lud
 	"msg_getheader",	-- gets the header as a lua string
 	"msg_fromstring", 	--make message contents from a string
+	"msg_frommessage", 	--make message contents from another message
 	"msg_tostring", 	--turn any message into a Lua string.
 	"msg_getsize", 		--number of bytes in a message. nil is no message present (not initialized).
 	"msg_setheader",	-- copies the specified string in the message's header, used to id the protocol
@@ -41,7 +41,7 @@ local message_api = {
 describe("the nml_msg api methods #nml_msg", function()
 		for i, method in ipairs(message_api) do
 			it("has all of the api calls present.", function()
-				assert.is_equal("function", type(nml[message_api]))
+				assert.are_equal("function", type(nml[method]))
 			end)
 		end
 end)
@@ -76,6 +76,16 @@ describe ("basic nml_msg operation #nml_msg", function()
 		msg_str = "string\0My second string"
 		assert.is_truthy(nml.msg_fromstring(msg_ud, msg_str))
 	end) 
+
+	it("will clone an existing message.", function()
+		local msg_ud_clone = nml.nml_msg()
+
+		msg_str = "string\0My second string"
+		nml.msg_fromstring(msg_ud, msg_str)
+		nml.msg_frommessage(msg_ud, msg_ud_clone)
+		
+		assert.are_equal(#msg_ud, #msg_ud_clone)
+	end)
 
 	it("will let me specify a header.", function()
 		assert.is_truthy(nml.msg_setheader(msg_ud, "mypr"))

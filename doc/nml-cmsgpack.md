@@ -149,6 +149,7 @@ Note: It's interesting to appreciate here that a function callback made from one
   msg_fromstring
   msg_tostring
   msg_getsize
+  msg_frommessage
 
 ###4.1 nml.nml_msg()
 Creates a new Message userdata object. Specifies a type name common to all messages, in order to later use luaL_checkudata(..., name).
@@ -158,8 +159,7 @@ Returns a new message userdata if successful, nil and an error message string in
 ---
 
 ###4.2 nml.msg_fromstring(msg_ud, msg_string)
-Copies msg_string's content into SNmlMessage.pvBuffer. 
-Uses lua_tolstring to determine the size of the copied buffer, sets SNmlMessage.ui64Size.
+Creates a new message userdata and initializes it with the specified lua string content.
 
 Returns the message userdata if successful, nil and an error message string in case of error.
 
@@ -346,6 +346,15 @@ Always returns a string. If pvBuffer is NULL then it will return an empty string
 
 ---
 
+4.13 nml.msg_frommessage
+Clones the specified message into a new message user data.
+
+    nml.msg_frommessage(source_msg_ud, dest_msg_ud)
+
+    assert(#new_msg_ud==#source_msg_ud)
+
+---
+
 #5 Using MessagePack as a serializer
 MessagePack will be made into a NuGet that can be imported by NML and any other modules requiring lua C MessagePack support. 
 
@@ -444,7 +453,7 @@ I'll update existing DSX modules to reflect this formatting.
 2. Write nml.msg* api lua tests.
 --> M1: lua tests code complete.
 
-3. Implement nml message functions.
+3. Implement all nml functions.
 4. test against item 2.
 --> M2: nml message api completed.
 

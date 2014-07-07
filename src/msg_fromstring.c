@@ -5,9 +5,10 @@ Puts the supplied lua string in the nml message's data payload, sets the size, a
 Any existing payload will be freed first.
 An error will be returned in case of a problem while freeing the existing payload.
 An error will be returned in case of a problem while allocating space for the string.
-@function msg_tostring
+@function msg_fromstring
 @param the nml message user data
-@return the nml message user data
+@param the string to put into the message
+@return the new nml message user data
 or
 @return nil
 @return error message
