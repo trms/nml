@@ -103,9 +103,6 @@
     <ClCompile Include="src\symbol.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="src\symbol_info.c">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="..\nanomsg\tests\block.c">
       <Filter>nanomsg\tests</Filter>
     </ClCompile>
@@ -227,6 +224,15 @@
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="src\msg_getsize.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_setheader.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\symbolinfo.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="chunk.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
   </ItemGroup>

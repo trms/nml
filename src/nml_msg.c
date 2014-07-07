@@ -30,8 +30,11 @@ The userdata doesn't contain any data, and is populated later following a nml_al
 int l_nml_msg(lua_State* L)
 {
 	// create a new nml message buffer
-	lua_newuserdata(L, sizeof(void*));
-	
+	uint32_t* pui32 = (uint32_t*)lua_newuserdata(L, sizeof(void*));
+
+	// initialize the data to NULL
+	*pui32 = 0;
+
 	// populate the ud metatable
 	luaL_newmetatable(L, "nml_msg");
 
@@ -71,7 +74,7 @@ int l_nml_msg(lua_State* L)
 	lua_pushcfunction(L, l_msg_getheader);
 	lua_settable(L, -3);
 
-	luaL_setmetatable(L, -2);
+	lua_setmetatable(L, -2);
 
 	// return the ud
 	return 1;

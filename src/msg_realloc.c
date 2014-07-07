@@ -3,7 +3,7 @@
 /***
 Reallocs an existing nml message data payload.
 @function msg_realloc
-@param self the nml message user data
+@param the nml message user data
 @param size the realloc size
 @return the nml message userdata
 or
@@ -14,7 +14,7 @@ int l_msg_realloc(lua_State* L)
 {
 	void** ppck = (void**)luaL_checkudata(L, 1, "nml_msg");
 
-	*ppck = nn_reallocmsg(*ppck, (size_t)luaL_checkinteger(L, 2)+8);
+	*ppck = ck_realloc(*ppck, (int)luaL_checkinteger(L, 2));
 
 	if (*ppck==NULL) {
 		lua_pushnil(L);

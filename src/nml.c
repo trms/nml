@@ -24,8 +24,8 @@
 
 
 
-int dump_stack (lua_State *L, const char * msg) {
-
+int dump_stack (lua_State *L, const char * msg) 
+{
 	int i;
 	int top = lua_gettop(L); /*depth of the stack*/
 

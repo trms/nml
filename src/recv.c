@@ -41,8 +41,6 @@ int l_recv(lua_State* L)
 	
 	int iIntermediateResult;
 	void* pData;
-	void* pHeader;
-	size_t sizeHeader;
 	size_t sizeRecv;
 	int flags = luaL_optint(L, P2, 0); // flags
 
@@ -51,14 +49,10 @@ int l_recv(lua_State* L)
 
 	hdr.msg_iov = &iov;
 	hdr.msg_iovlen = 1;
-	hdr.msg_control = NULL; // &pHeader;
-	hdr.msg_controllen = 0; // NN_MSG;
+	hdr.msg_control = NULL;
+	hdr.msg_controllen = 0;
 
 	sizeRecv = nn_recvmsg (luaL_checkint(L, P1), &hdr, flags);
-
-	// socket
-	// timeout
-	//size_t buff_size =  nn_recv(luaL_checkint(L, P1), &pData, NN_MSG, flags);
 
 	if (sizeRecv !=-1) {
 		// put the string in lua space
@@ -67,15 +61,6 @@ int l_recv(lua_State* L)
 		// free the nn buffer
 		iIntermediateResult = nn_freemsg(pData);
 		assert(iIntermediateResult!=-1); // I don't want to return this to the caller but I should have the ability to spot this problem in debug
-
-		// put the header
-		sizeHeader = nn_chunk_size(pHeader);
-		lua_pushlstring(L, (const char*)pHeader, sizeHeader);
-
-		iIntermediateResult = nn_freemsg(pHeader);
-		assert(iIntermediateResult!=-1); // I don't want to return this to the caller but I should have the ability to spot this problem in debug
-
-		return 2;
 	} else
 		lua_pushnil(L);
 	// result

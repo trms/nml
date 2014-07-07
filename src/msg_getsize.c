@@ -3,7 +3,7 @@
 /***
 Returns the nml message's data payload size in bytes.
 @function msg_getsize
-@param self the nml message user data
+@param the nml message user data
 @return the nml message data payload size as an integer
 or
 @return nil
@@ -18,6 +18,6 @@ int l_msg_getsize(lua_State* L)
 		lua_pushstring(L, nn_strerror(nn_errno()));
 		return 2;
 	}
-	lua_pushinteger(L, *(((uint32_t*)*ppck)+4));
+	lua_pushinteger(L, ck_get_size(*ppck));
 	return 1;
 }
