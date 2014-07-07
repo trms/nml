@@ -1,7 +1,5 @@
---local llthreads = require'llthreads'
 local nml=require'nml'
 local events = require'nml.events'
---local pw=require'pl.pretty'.write
 require'busted'
 
 local AF_SP = nml.symbols.AF_SP.value
@@ -17,68 +15,58 @@ local pair_1 = nml.socket(AF_SP, NN_PAIR)
 nml.bind(pair_1, PAIR_ADDR)
 local pair_2 = nml.socket(AF_SP, NN_PAIR)
 nml.connect(pair_2, PAIR_ADDR)
-local msg1_ud, msg1_str ,msg_type1, msg2_ud, msg2_str, msg_type2
+local msg1_ud, msg1_str, msg1_type, msg2_ud
+
+msg1_ud = nml.nml_msg()
+msg1_str = "ABC"
+msg1_type = "TST1"
+
+nml.msg_fromstring(msg1_ud, msg1_str)
+nml.msg_setheader(msg1_ud, msg1_type)
 
 describe("Send tests #send #recv", function()
-	it("can send a simple text message, without defining the buffer length.", function()
-		msg1 = "ABC"
-		assert.is_truthy(nml.send(pair_1, msg1))
+	it("can send a simple text message.", function()
+		assert.is_truthy(nml.send(pair_1, msg1_ud))
 	end)
 
 	it("can recv a simple text message.", function()
-		msg2, msg_type2 = nml.recvmsg(pair_2)
-		assert.is_truthy(msg2)
-		print("msg2", msg2)
+		msg2_ud = nml.recv(pair_2)
+		assert.is_truthy(msg2_ud)
 	end)
 
--- 		it("receives a message as userdata", function()
--- 			assert.not_falsy(msg2)
--- 			assert.is_equal("userdata", type(msg2))
--- 		end)
+	it("receives a message as userdata.", function()
+		assert.is_equal("userdata", type(msg2_ud))
+	end)
 
--- 		it("receives a message type as the 2nd return value", function()
--- 			assert.is_equal("string", msg_type2)
--- 		end)
+	it("received a non-empty message.", function()
+		assert.is_true(#msg2_ud>0)
+	end)
+
+	it("received a message of the same type as the original.", function()
+		assert.is_equal(msg1_type, nml.msg_getheader(msg2_ud))
+	end)
+
+	it("received a message of the same size as the original.", function()
+		assert.are_equal(#msg1_ud, #msg2_ud)
+	end)
+
+	it("received the original message.", function()
+		assert.are_equal(msg1_str, nml.msg_tostring(msg2_ud))
+	end)
 	
-	
--- 	it("converts a message userdata using the nml.tostring() method.", function()
--- 		msg2_str = nml.tostring(msg2)
--- 		assert.isequal("string", type(msg2_str))
--- 	end)
--- 	it("frees the message, which is still there, even after it was converted.", function() 
-		-- --returns true when free happens. false if no pointer. nil, msg (or error) if something bad happens.
-		-- assert.is_true(nml.free(msg2))
-		-- --freeing again returns false.
-		-- assert.is_false(nml.free(msg2))
-		-- msg2 = nil
-		-- collectgarbage();collectgarbage();collectgarbage()
-		-- --there shouldn't be any error here, even though __gc was called.
--- 	end)
+	it("frees the message, which is still there, even after it was converted.", function() 
+		--returns true when free happens. false if no pointer. nil, msg (or error) if something bad happens.
+		assert.is_true(nml.msg_free(msg2_ud))
+		--freeing again returns false.
+		assert.is_false(nml.msg_free(msg2_ud))
+		msg2_ud = nil
+		collectgarbage();collectgarbage();collectgarbage()
+		--there shouldn't be any error here, even though __gc was called.
+	end)
 
--- 	it("can send and receive a string message where the length and message type are defined", function()
--- 		msg_type1 = "text/foo"
--- 		assert.is_truthy(nml.send(pair_1, msg1, 0, #msg1, msg_type1))
--- 		msg2, msg_type2 = nml.recv(pair_2)
-
--- 	end)
-		
-
-	
-
--- 	it("can send and recv a simple text message, without defining the buffer length.", function()
--- 		msg1 = "ABC"
--- 		nml.send(pair_1, msg1)
--- 		msg2 = nml.recv(pair_2)
-
--- 		assert.not_falsy(msg2)
--- 		assert.is_equal(msg1, msg2)
-
--- 	end)
-	
-	
--- -- /*  Clean up. */
--- 	it("closes the sockets", function()
--- 		assert.is_truthy(nml.close(pair_2))
--- 		assert.is_truthy(nml.close(pair_1))
--- 	end)
+-- /*  Clean up. */
+	it("closes the sockets", function()
+		assert.is_truthy(nml.close(pair_2))
+		assert.is_truthy(nml.close(pair_1))
+	end)
 end)
