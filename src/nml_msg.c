@@ -29,6 +29,8 @@ The userdata doesn't contain any data, and is populated later following a nml_al
 */
 int l_nml_msg(lua_State* L)
 {
+	int i;
+
 	// create a new nml message buffer
 	uint32_t* pui32 = (uint32_t*)lua_newuserdata(L, sizeof(void*));
 
@@ -46,38 +48,25 @@ int l_nml_msg(lua_State* L)
 	lua_pushcfunction(L, l_msg_getsize);
 	lua_settable(L, -3);
 
-	lua_pushstring(L, "msg_alloc");
-	lua_pushcfunction(L, l_msg_alloc);
+	lua_pushstring(L, "__index");
+	lua_pushvalue(L, -2);
 	lua_settable(L, -3);
 
-	lua_pushstring(L, "msg_realloc");
-	lua_pushcfunction(L, l_msg_realloc);
-	lua_settable(L, -3);
-
-	lua_pushstring(L, "msg_free");
-	lua_pushcfunction(L, l_msg_free);
-	lua_settable(L, -3);
-
-	lua_pushstring(L, "msg_fromstring");
-	lua_pushcfunction(L, l_msg_fromstring);
-	lua_settable(L, -3);
-
-	lua_pushstring(L, "msg_tostring");
+	lua_pushstring(L, "__tostring");
 	lua_pushcfunction(L, l_msg_tostring);
 	lua_settable(L, -3);
 
-	lua_pushstring(L, "msg_getsize");
-	lua_pushcfunction(L, l_msg_getsize);
-	lua_settable(L, -3);
-
-	lua_pushstring(L, "msg_getbuffer");
-	lua_pushcfunction(L, l_msg_getbuffer);
-	lua_settable(L, -3);
-
-	lua_pushstring(L, "msg_getheader");
+	lua_pushstring(L, "type");
 	lua_pushcfunction(L, l_msg_getheader);
 	lua_settable(L, -3);
 
+	// make the msg functions accessible through the metatable
+	// this way 3rd party C modules can access buffer allocators etc.
+	for (i=0; i<g_inmlMsgApis; i++) {
+		lua_pushstring(L, g_apchMsgApi[i].name);
+		lua_pushcfunction(L, g_apchMsgApi[i].fn);
+		lua_settable(L, -3);
+	}
 	lua_setmetatable(L, -2);
 
 	// return the ud

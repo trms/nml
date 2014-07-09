@@ -138,7 +138,9 @@ The fourCC code is considered the 'header' and specifies the data format, and is
 ---
 
 #4 NML api
-Note: It's interesting to appreciate here that a function callback made from one C module will be executed in another C module, using the Lua stack as a middle man.
+The following functions are implemented both inside nml and in the nml message's metatable.
+They allow manipulation of a nml message userdata.
+Making them accessible through the nml message's metatable also allows a 3rd party C module to manipulate a nml message's content using nml's allocators.
 
   nml_msg
   msg_alloc
@@ -150,6 +152,25 @@ Note: It's interesting to appreciate here that a function callback made from one
   msg_tostring
   msg_getsize
   msg_frommessage
+
+Note: In the later situation it's interesting to appreciate that a function callback made from one C module will be executed in another C module, using the Lua stack as a middle man:
+                                                                                        
+                               +-------+                                             
+                               |       |                                             
+                               |  Lua  |                                             
+                  +----------> |       +-----------+                                 
+                  |            +-------+           |                                 
+                  |                                |                             LUA 
+                  |                                |                                 
+   +--------------------------------------------------------------------------------+
+                  |                                |                                 
+1.call(msg_alloc) |                                v                              C  
+                  |                                    2.nn_allocmsg                 
+           +------+-------+                    +-------+         +-----------+       
+           |              |                    |       |         |           |       
+           | MessagePack  |                    |  NML  +-------> |  NanoMsg  |       
+           |              |                    |       |         |           |       
+           +--------------+                    +-------+         +-----------+       
 
 ###4.1 nml.nml_msg()
 Creates a new Message userdata object. Specifies a type name common to all messages, in order to later use luaL_checkudata(..., name).
