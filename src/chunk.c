@@ -29,6 +29,9 @@ void* ck_alloc(const int in_i)
 	// store the size
 	*((uint32_t*)pv+(g_iSizeOffset>>2)) = in_i;
 
+   // reset the header
+   *(uint32_t*)pv = 0;
+
 	return pv;
 }
 

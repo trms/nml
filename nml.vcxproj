@@ -357,7 +357,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\allocmsg.c" />
     <ClCompile Include="src\bind.c" />
     <ClCompile Include="src\chunk.c" />
     <ClCompile Include="src\close.c" />
@@ -367,7 +366,6 @@
     <ClCompile Include="src\env.c" />
     <ClCompile Include="src\errno.c" />
     <ClCompile Include="src\FD_xx.cpp" />
-    <ClCompile Include="src\freemsg.c" />
     <ClCompile Include="src\getsockopt.c" />
     <ClCompile Include="src\msg_alloc.c" />
     <ClCompile Include="src\msg_free.c" />
@@ -380,13 +378,10 @@
     <ClCompile Include="src\msg_setheader.c" />
     <ClCompile Include="src\msg_tostring.c" />
     <ClCompile Include="src\nml.c" />
-    <ClCompile Include="src\nml_msg.c" />
     <ClCompile Include="src\poll.c" />
     <ClCompile Include="src\recv.c" />
-    <ClCompile Include="src\recvmsg.c" />
     <ClCompile Include="src\select.c" />
     <ClCompile Include="src\send.c" />
-    <ClCompile Include="src\sendmsg.c" />
     <ClCompile Include="src\setsockopt.c" />
     <ClCompile Include="src\shutdown.c" />
     <ClCompile Include="src\sleep.c" />

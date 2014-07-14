@@ -38,7 +38,7 @@ int l_send(lua_State* L)
 	struct nn_iovec iov;
 	struct nn_msghdr hdr;
 
-	void** ppck = (void**)luaL_checkudata(L, 2, "nml_msg");
+	void** ppck = (void**)luaL_checkudata(L, 2, g_achBufferUdMtName);
 	
 	socket = luaL_checkint(L, P1); // the socket
 	flags = (!lua_isnoneornil (L, P3) ) ?  luaL_checkint(L, P3) : 0; // flags

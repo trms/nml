@@ -12,26 +12,61 @@ or
 */
 int l_msg_frommessage(lua_State* L)
 {
-	size_t sizePayload;
-	void** ppck = (void**)luaL_checkudata(L, 1, "nml_msg");
-	void** ppck2 = (void**)luaL_checkudata(L, 2, "nml_msg");
+   void* pvSource;
+   void** ppvDest;
+   int iSourceSize;
+   DWORD dwHeader = 0;
+   const char* pchHeader;
+   int iHeaderSize;
 
-	// if there's already a payload, free it first
-	if (*ppck2!=NULL) {
-		if (ck_free(*ppck2)!=0) {
-			lua_pushnil(L);
-			lua_pushstring(L, nn_strerror(nn_errno()));
-			return 2;
-		}
-	}
-	*ppck2 = ck_alloc(ck_get_size(*ppck));
+   // NOTE: I don't know if the message is nml-allocated, so I use the message api here
+   luaL_checkudata(L, 1, g_achBufferUdMtName);
 
-	// copy the data
-	ck_copy_data(*ppck2, ck_get_data(*ppck), ck_get_size(*ppck));
+   // get the size
+   luaL_getmetafield(L, -1, "getsize");
+   lua_pushvalue(L, 1);
+   lua_call(L, 1, 1);
 
-	// set ckid
-	ck_set_header(*ppck2, *((DWORD*)ck_get_header(*ppck)));
+   if (lua_isnil(L, -1)) {
+      // error
+   } else
+      iSourceSize = (int)lua_tointeger(L, -1);
+   lua_pop(L, 1);
 
-	lua_settop(L, 1);
+   // get the buffer
+   luaL_getmetafield(L, -1, "getbuffer");
+   lua_pushvalue(L, 1);
+   lua_call(L, 1, 1);
+
+   if (lua_isnil(L, -1)) {
+      // error
+   } else
+      pvSource = lua_touserdata(L, -1);
+   lua_pop(L, 1);
+
+   // create a new message
+   lua_pushinteger(L, iSourceSize);
+   l_msg_alloc(L);
+
+   // get the new buffer
+   // since I know it's a nml buffer I'll use a shortcut here
+   ppvDest = (void**)luaL_checkudata(L, -1, g_achBufferUdMtName);
+   
+   if ((pvSource!=NULL)&&(*ppvDest!=NULL)&&(iSourceSize>0)) {
+      ck_copy_data(*ppvDest, pvSource, iSourceSize);
+
+      // set ckid
+      luaL_getmetafield(L, 1, "getheader");
+      lua_pushvalue(L, 1);
+      lua_call(L, 1, 1);
+
+      if (lua_isnil(L, -1)==FALSE) {
+         pchHeader = lua_tolstring(L, -1, &iHeaderSize);
+         memcpy(&dwHeader, pchHeader, min(4, iHeaderSize));
+         ck_set_header(*ppvDest, dwHeader);
+      }
+      lua_pop(L, 1);
+   }
+   // return the dest ud
 	return 1;
 }

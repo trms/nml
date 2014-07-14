@@ -12,7 +12,7 @@ or
 */
 int l_msg_realloc(lua_State* L)
 {
-	void** ppck = (void**)luaL_checkudata(L, 1, "nml_msg");
+	void** ppck = (void**)luaL_checkudata(L, 1, g_achBufferUdMtName);
 
 	*ppck = ck_realloc(*ppck, (int)luaL_checkinteger(L, 2));
 

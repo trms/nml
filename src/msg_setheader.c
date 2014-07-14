@@ -19,7 +19,7 @@ int l_msg_setheader(lua_State* L)
 {
 	int istrlen;
 	const char* pch = lua_tolstring(L, 2, &istrlen);
-	void** ppck = (void**)luaL_checkudata(L, 1, "nml_msg");
+	void** ppck = (void**)luaL_checkudata(L, 1, g_achBufferUdMtName);
 
 	if (*ppck==NULL) {
 		// allocate a new data payload

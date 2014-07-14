@@ -11,7 +11,7 @@ or
 */
 int l_msg_getsize(lua_State* L)
 {
-	void** ppck = (void**)luaL_checkudata(L, 1, "nml_msg");
+	void** ppck = (void**)luaL_checkudata(L, 1, g_achBufferUdMtName);
 
 	if (*ppck==NULL) {
 		lua_pushnil(L);

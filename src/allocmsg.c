@@ -22,10 +22,46 @@
 
 #include "nml.h"
 
-// allocate a message
 // http://nanomsg.org/v0.3/nn_allocmsg.3.html
+/***
+Allocates a new buffer payload using nanomsg's allocator and wraps it in a lua userdata.
+@function msg_alloc
+@param size the realloc size
+@return the nml message userdata
+or
+@return nil
+@return error message
+*/
 int l_allocmsg(lua_State* L)
 {
-	// this is called internally by nml
-	return 0;
+   void** ppv = (void**)lua_newuserdata(L, sizeof(void*));
+   *ppv = ck_alloc(luaL_checkint(L, 1));
+
+   if (*ppv==NULL) {
+      lua_pushnil(L);
+      lua_pushstring(L, nn_strerror(nn_errno()));
+      return 2;
+   }
+   // populate the ud metatable
+   luaL_newmetatable(L, g_achBufferUdMtName);
+
+   lua_pushstring(L, "__gc");
+   lua_pushcfunction(L, l_msg_free);
+   lua_settable(L, -3);
+
+   lua_pushstring(L, "__len");
+   lua_pushcfunction(L, l_msg_getsize);
+   lua_settable(L, -3);
+
+   lua_pushstring(L, "__tostring");
+   lua_pushcfunction(L, l_msg_tostring);
+   lua_settable(L, -3);
+
+   lua_pushstring(L, "type");
+   lua_pushcfunction(L, l_msg_getheader);
+   lua_settable(L, -3);
+
+   lua_setmetatable(L, -2);
+
+   return 1;
 }

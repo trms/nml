@@ -52,6 +52,9 @@
 //max string length for options
 #define NML_MAX_STR 1024
 
+// used by lua to confirm userdata identity
+static const char g_achBufferUdMtName[] = "NML_RIFF";
+
 #define nml_api(a) \
 	static const TCHAR g_ach##a[] = _T(#a);\
 	int l_##a(lua_State* L);
@@ -71,11 +74,6 @@ nml_api(connect)
 nml_api(shutdown)
 nml_api(send)
 nml_api(recv)
-nml_api(sendmsg)
-nml_api(recvmsg)
-nml_api(allocmsg)
-nml_api(freemsg)
-nml_api(cmsg)
 nml_api(poll)
 nml_api(errno)
 nml_api(strerror)
@@ -84,7 +82,6 @@ nml_api(symbolinfo)
 nml_api(device)
 nml_api(term)
 nml_api(env)
-nml_api(nml_msg)
 nml_api(msg_alloc)
 nml_api(msg_realloc)
 nml_api(msg_free)
@@ -105,22 +102,14 @@ typedef struct SnmlApi{
 
 static struct SnmlApi g_apchApi[] = {{g_achsocket, l_socket}, {g_achclose, l_close}, {g_achsetsockopt, l_setsockopt},
 	{g_achgetsockopt, l_getsockopt}, {g_achbind, l_bind}, {g_achconnect, l_connect}, {g_achshutdown, l_shutdown}, {g_achsend, l_send}, 
-	{g_achrecv, l_recv}, {g_achsendmsg, l_sendmsg}, {g_achrecvmsg, l_recvmsg}, {g_achallocmsg, l_allocmsg}, {g_achfreemsg, l_freemsg}, 
-	{g_achcmsg, l_cmsg}, {g_achpoll, l_poll}, {g_acherrno, l_errno}, {g_achstrerror, l_strerror}, {g_achsymbol, l_symbol}, {g_achsymbolinfo, l_symbolinfo},
+	{g_achrecv, l_recv}, {g_achpoll, l_poll}, {g_acherrno, l_errno}, {g_achstrerror, l_strerror}, {g_achsymbol, l_symbol}, {g_achsymbolinfo, l_symbolinfo},
 	{g_achdevice, l_device}, {g_achterm, l_term}, {g_achsleep, l_sleep}, {g_achselect, l_select}, 
 	{g_achFD_CLR, l_FD_CLR}, {g_achFD_ISSET, l_FD_ISSET}, {g_achFD_SET, l_FD_SET}, {g_achFD_ZERO, l_FD_ZERO},
-	{g_achnml_msg, l_nml_msg}, {g_achmsg_alloc, l_msg_alloc}, {g_achmsg_realloc, l_msg_realloc}, {g_achmsg_free, l_msg_free}, {g_achmsg_getbuffer, l_msg_getbuffer}, 
+	{g_achmsg_alloc, l_msg_alloc}, {g_achmsg_realloc, l_msg_realloc}, {g_achmsg_free, l_msg_free}, {g_achmsg_getbuffer, l_msg_getbuffer}, 
 	{g_achmsg_getheader, l_msg_getheader}, {g_achmsg_setheader, l_msg_setheader}, {g_achmsg_fromstring, l_msg_fromstring}, {g_achmsg_tostring, l_msg_tostring}, 
 	{g_achmsg_getsize, l_msg_getsize}, {g_achmsg_frommessage, l_msg_frommessage}
 };
 static const int g_inmlApis = sizeof(g_apchApi)/sizeof(g_apchApi[0]);
-
-// message api subset - what we want to expose through a nml message's metatable
-static struct SnmlApi g_apchMsgApi[] = {{g_achmsg_alloc, l_msg_alloc}, {g_achmsg_realloc, l_msg_realloc}, {g_achmsg_free, l_msg_free}, {g_achmsg_getbuffer, l_msg_getbuffer}, 
-	{g_achmsg_getheader, l_msg_getheader}, {g_achmsg_setheader, l_msg_setheader}, {g_achmsg_fromstring, l_msg_fromstring}, {g_achmsg_tostring, l_msg_tostring}, 
-	{g_achmsg_getsize, l_msg_getsize}, {g_achmsg_frommessage, l_msg_frommessage}};
-
-static const int g_inmlMsgApis = sizeof(g_apchMsgApi)/sizeof(g_apchMsgApi[0]);
 
 //////////////////////////////////////////////////////////////////////////
 // private functions

@@ -40,9 +40,6 @@
     <ClCompile Include="src\nml.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\allocmsg.c">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="src\term.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
@@ -67,9 +64,6 @@
     <ClCompile Include="src\errno.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="src\freemsg.c">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="src\getsockopt.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
@@ -79,13 +73,7 @@
     <ClCompile Include="src\recv.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="src\recvmsg.c">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="src\send.c">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
-    <ClCompile Include="src\sendmsg.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="src\setsockopt.c">
@@ -199,9 +187,6 @@
     <ClCompile Include="src\FD_xx.cpp">
       <Filter>Source Files\api</Filter>
     </ClCompile>
-    <ClCompile Include="src\nml_msg.c">
-      <Filter>Source Files\api</Filter>
-    </ClCompile>
     <ClCompile Include="src\msg_alloc.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
@@ -233,7 +218,7 @@
       <Filter>Source Files\api</Filter>
     </ClCompile>
     <ClCompile Include="src\chunk.c">
-      <Filter>Source Files\api</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\msg_frommessage.c">
       <Filter>Source Files\api</Filter>

@@ -39,14 +39,13 @@ int l_recv(lua_State* L)
 	struct nn_iovec iov;
 	struct nn_msghdr hdr;
 	
-	int iIntermediateResult;
 	size_t sizeRecv;
 	int flags = luaL_optint(L, P2, 0); // flags
 	void** ppck;
 
 	// create a new nml message
-	l_nml_msg(L);
-	ppck = (void**)luaL_checkudata(L, -1, "nml_msg");
+	//l_nml_msg(L);
+	ppck = (void**)luaL_checkudata(L, -1, g_achBufferUdMtName);
 
 	iov.iov_base = ppck;
 	iov.iov_len = NN_MSG;

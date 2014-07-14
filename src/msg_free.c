@@ -13,20 +13,19 @@ or
 */
 int l_msg_free(lua_State* L)
 {
-	// free the allocated buffer if any
-	void** ppck = (void**)luaL_checkudata(L, 1, "nml_msg");
+	int iRet=1;
+   void** ppv = (void**)luaL_checkudata(L, 1, g_achBufferUdMtName);
 
-	if (*ppck != NULL) {
-		if (ck_free(*ppck)!=0) {
-			lua_pushnil(L);
-			lua_pushstring(L, nn_strerror(nn_errno()));
-			return 2;
-		}
-		// reset the ptr
-		*ppck = NULL;
-
-		lua_pushboolean(L, TRUE);
-	} else
-		lua_pushboolean(L, FALSE);
-	return 1;
+   if (*ppv!=NULL) {
+      if (ck_free(*ppv)==0)
+         lua_pushboolean(L, TRUE);
+      else {
+         lua_pushnil(L);
+         lua_pushstring(L, nn_strerror(nn_errno()));
+         iRet=2;
+      }
+   } else
+      lua_pushboolean(L, FALSE);
+   *ppv = NULL;
+   return 1;
 }

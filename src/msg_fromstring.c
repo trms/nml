@@ -16,26 +16,23 @@ or
 int l_msg_fromstring(lua_State* L)
 {
 	size_t sizePayload;
-	void** ppck = (void**)luaL_checkudata(L, 1, "nml_msg");
+	const char* pch = luaL_checklstring(L, 1, &sizePayload);
+   void** ppvDest;
 
-	const char* pch = luaL_checklstring(L, 2, &sizePayload);
+   // allocate the buffer
+   lua_pushinteger(L, sizePayload);
+   l_msg_alloc(L); // L:2
 
-	// if there's already a payload, free it first
-	if (*ppck!=NULL) {
-		if (ck_free(*ppck)!=0) {
-			lua_pushnil(L);
-			lua_pushstring(L, nn_strerror(nn_errno()));
-			return 2;
-		}
-	}
-	*ppck = ck_alloc(sizePayload);
+   // recover the buffer
+   if (lua_isnil(L, -1)==FALSE) {
+      ppvDest = (void**)luaL_checkudata(L, -1, g_achBufferUdMtName);
+      
+      // copy the string
+      ck_copy_data(*ppvDest, pch, sizePayload);
 
-	// copy the string
-	ck_copy_data(*ppck, pch, sizePayload);
-
-	// set ckid
-	ck_set_header(*ppck, MAKEFOURCC('S', 'T', 'R', ' '));
-
-	lua_settop(L, 1);
+      // set the header
+      ck_set_header(*ppvDest, MAKEFOURCC('S', 'T', 'R', ' '));
+   }
+   // return the ud
 	return 1;
 }

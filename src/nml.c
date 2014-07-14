@@ -24,7 +24,7 @@
 
 
 
-int dump_stack (lua_State *L, const char * msg) 
+int dump_stack (lua_State *L, const char * msg)
 {
 	int i;
 	int top = lua_gettop(L); /*depth of the stack*/
@@ -34,22 +34,24 @@ int dump_stack (lua_State *L, const char * msg)
 		int t = lua_type(L, i);
 		printf("%d:\t", i);
 		switch(t){
-		case LUA_TSTRING: { /* strings */
+		case LUA_TSTRING:  /* strings */
 			printf("'%s'", lua_tostring(L,i));
 			break;
-								}
-		case LUA_TBOOLEAN: { /*boolean values*/
+		case LUA_TBOOLEAN:  /*boolean values*/
 			printf(lua_toboolean(L,i) ? "true" : "false");
 			break;
-								 }
-		case LUA_TNUMBER: { /* numbers */
+		case LUA_TNUMBER:  /* numbers */
 			printf("%g", lua_tonumber(L, i));
 			break;
-								}
-		default: { /*anything else*/
+      case LUA_TUSERDATA:
+         printf("%s - 0x%08X", lua_typename(L,t), lua_touserdata(L, i));
+         break;
+      case LUA_TLIGHTUSERDATA:
+         printf("lightuserdata - 0x%08X", lua_touserdata(L, i));
+         break;
+		default:  /*anything else*/
 			printf("%s", lua_typename(L,t));
 			break;
-					}
 		}
 		printf("\n"); /* put in a separator */
 	}
