@@ -79,42 +79,53 @@ Note: Application = MediaCircus filter (typically)
 
 #3 Message format
 ##3.1 Lua representation
-A message is a userdata allocated by NML.
-The userdata has a metatable also created and assigned by NML. 
+A message is a table that contains a userdata pointing to a custom-allocated buffer, usually allocated by NML.
+The message's table is populated with functions. These functions allow message payload allocation and message content access.
+The NML.Lua layer will populate the message table functions, thus determining which allocators will be used.
 
-The NML.Lua layer can populate the message's metatable.
-*(to be confirmed) NML does not define the __newindex function on the message userdata's metatable. So it must create a placeholder for all exported msg functions.
-
-A Message's metatable exposes the following API:
-
-    {
-      __gc,
-      __len,
-      alloc,      // allows a 3rd party C module to populate the pvBuffer
-      realloc,    // ""
-      free,       // allows a 3rd party C module to manage the pvBuffer (overwrite it by first deleting it...)
-      getbuffer,  // allows a 3rd oarty C module to retrieve pvBuffer
-      getheader,  // allows a 3rd party C module to retrieve pvHeader
-      setheader,  // allows a 3rd party to set the message header
-    }
-
-The default implementation uses the following callbacks:
+A nml message table should expose the following functions (using nml's implementations in this example):
 
     msg.alloc = nml.msg_alloc
     msg.free = nml.msg_free
     msg.realloc = nml.msg_realloc
-    getmetatable(msg).__len = nml.msg_getsize
     msg.getbuffer = nml.msg_getbuffer
-    msg.getheader = nml.msg_getheader
+    msg.getallocatortype = function() ... return the allocator string... end
 
-When NML allocates a msg_ud it will call the proper internal functions and populate the msg_ud metatable with the appropriate memory allocation functions. A default implementation for each of the metatable functions is provided by NML (api contract is guaranteed).
+The above are used by C modules to access the message's payload.
 
 ###3.2 C representation
-The buffer is represented using a RIFF formatting. The first 4 bytes are the FCC code, followed by 4 bytes containing the size of the chunk (excluding the FCC and size identifiers), and followed by the chunk itself. 
+If NML is used to allocate functions, then the allocator type should be set to "nml" (not case sensitive).
+The preferred allocator type is "NML ". Using this allocator will guarantee zero-copy on the nanomsg side.
+If the allocator type is set to "NML " some assumptions will be made in NML.core about the pvBuffer content (handled as a RIFF, see below). The buffer data will be accessed directly and not through the lua functions.
+
+NML's C core will access the message through its getbuffer api. Again if NML is the allocator then it will directly call the assigned C functions without using lua call.
+
+#####nml.send
+If the allocator type is set to "nml" then nml.core will use nanomsg's zero-copy mechanism.
+
+The allocator can also be set to a custom type, in which case NML.core will access the buffer's data through the buffer's Lua functions as found in the buffer's metatable. This will cause the buffer to be copied into a nanomsg-allocated buffer.
+
+#####nml.recv
+Receives a message from an SP socket and generates a new nml message out of it.
+    
+    local my_message = nml.recv()
+
+The incoming data is always allocated by nanomsg. 
+nml.core sets the message's table to use nml functions.
+nml.core sets the allocator type to "nml" upon receiving new data.
+
+###3.4 NML payload allocation
+The buffer data is represented using a RIFF formatting. The first 4 bytes are the FCC code, followed by 4 bytes containing the size of the chunk (excluding the FCC and size identifiers), and followed by the chunk itself. 
 
 The payload chunk may be followed by a junk chunk to satisfy alignment requirements.
 
-The FCC code is used to identify the payload type (ex: MSGP for MessagePack). FCC codes used are in the context of MediaCircus, and may clash with registered FCC codes.
+The FCC code is used to identify the payload type (ex: MSGP for MessagePack). 
+FCC codes used are in the context of MediaCircus, and may clash with registered FCC codes.
+Note that the FCC code only allows four characters, which differs from the allocator, represented by a lua string.
+
+**The FCC code allows identification of the data type on the receiving end.
+
+**The RIFF format is what gets sent over the SP socket, regardless of the allocator type.
 
     0       4       8                                                         104     108     112       128
     +-------+-------+----------------------------------------------------------+-------+-------+---------+ 
@@ -129,7 +140,6 @@ The FCC code is used to identify the payload type (ex: MSGP for MessagePack). FC
 The RIFF chunk details are hidden from the lua view. alloc, free, realloc all operate on the data portion of the buffer. 
 The nml.msg_* functions will handle RIFF parsing internally. For example, calling nml.msg_alloc will allocate the first 8 bytes, plus the requested size, plus the trailing junk chunk if applicable. It will then return a pointer to the data chunk.
 
-#####buffer access
 The riff chunk format contains all information needed to parse the buffer. Size, type and data.
 
 We'll support allocating the data type before knowing the chunk fourCC code. 
@@ -138,22 +148,20 @@ The fourCC code is considered the 'header' and specifies the data format, and is
 ---
 
 #4 NML api
-The following functions are implemented both inside nml and in the nml message's metatable.
+Nml.core implements the following functions to access the buffer's userdata object.
 They allow manipulation of a nml message userdata.
-Making them accessible through the nml message's metatable also allows a 3rd party C module to manipulate a nml message's content using nml's allocators.
 
-  nml_msg
   msg_alloc
   msg_realloc
   msg_free
-  msg_getbuffer
   msg_getheader
   msg_fromstring
+  msg_getbuffer
+  msg_frombuffer
   msg_tostring
   msg_getsize
-  msg_frommessage
-
-Note: In the later situation it's interesting to appreciate that a function callback made from one C module will be executed in another C module, using the Lua stack as a middle man:
+  
+Note: a function callback made from one C module can be executed in another C module, using the Lua stack as a middle man:
                                                                                         
                                +-------+                                             
                                |       |                                             
@@ -172,116 +180,128 @@ Note: In the later situation it's interesting to appreciate that a function call
            |              |                    |       |         |           |       
            +--------------+                    +-------+         +-----------+       
 
-###4.1 nml.nml_msg()
-Creates a new Message userdata object. Specifies a type name common to all messages, in order to later use luaL_checkudata(..., name).
+###workflow example
+Send example:
 
-Returns a new message userdata if successful, nil and an error message string in case of error.
+    -- this is our message table
+    local my_msg = {
+      alloc = nml.msg_alloc,
+      realloc = nml.msg_realloc,
+      free = nml.msg_free,
+      getheader = nml.msg_getheader,
+      getsize = nml.msg_getsize,
+      getbuffer = nml.msg_getbuffer, -- return the payload section of the buffer ud riff
+    }
 
----
+    -- we're using nml allocators, return the string 'nml'
+    my_msg.getaallocatortype = function return "nml" end
 
-###4.2 nml.msg_fromstring(msg_ud, msg_string)
+    -- return the buffer payload if allocated, nil otherwise
+    my_msg.getbuffer = function return self.buffer end
+
+    -- NOTE: don't assign __gc to msg_free, since nml.send will free the message payload
+
+    -- populate the message payload
+    my_msg.buffer = nml.msg_fromstring("Hello World!")
+    -- note: when using fromstring, getallocatortype needs to return "nml" whenever asked
+
+    -- the data is populated
+    assert(type(my_msg.buffer)=="userdata")
+
+    -- send it over the SP socket
+    -- this will free the message's nml-allocated buffer
+    nml.send(my_msg)
+
+    -- remove the buffer, it's been consumed
+    my_msg.buffer = nil
+
+Receive example:
+
+    local my_msg = nml.recv()
+
+    -- consume the message
+    print("received "..nml.msg_tostring(my_msg))
+
+    -- free the message
+    nml.msg_free(my_msg) -- when receiving data, this could be put in the __gc processing
+    my_msg = nil
+
+###4.1 nml.msg_fromstring(msg_string)
 Creates a new message userdata and initializes it with the specified lua string content.
+This will use the nml allocator to allocate the buffer userdata object.
 
 Returns the message userdata if successful, nil and an error message string in case of error.
 
----
-
-###4.3 nml.msg_getsize(msg_ud)
-Gets SNmlMessage.ui64Size, the size of the data pointed to by SNmlMessage.pvBuffer.
-
-Returns the size if successful, nil and an error message string in case of error.
-
 #####Implementation
 
-    SNmlMessage* pMessage = luaL_checkudata(L, -1, metatable_name_str);
-    lua_pushinteger(L, pMessage->ui64Size);
-    return 1;
-
----
-
-###4.4 nml.msg_getbuffer
-Returns the Message's buffer (as a lightuserdata) and its size. This is typically used by 3rd party C modules to access the payload without needing to case the msg_ud into a C struct.
-
-    SNmlMessage* pMessage = luaL_checkudata(L, 1, metatable_name_str);
-    lua_pushlightuserdata(L, pMessage->pvBuffer);
-    lua_pushinteger(L, pMessage->ui64BufferSize);
-    return 2;
-
----
-
-###4.5 nml.msg_alloc(msg_ud, size)
-Allocates a buffer of the specified size in SNmlMessage.
-Calls nn_allocmsg, and sets SNmlMessage.pvBuffer.
-Sets SNmlMessage.ui64Size.
-
-Returns Message userdata if successful, or nil and an error message string in case of error.
-
----
-
-###4.6 nml.msg_realloc(msg_ud, size)
-Reallocates a buffer of the specified size in SNmlMessage.
-Calls nn_reallocmsg, and sets SNmlMessage.pvBuffer.
-Sets SNmlMessage.ui64Size.
-
-Returns Message userdata if successful, or nil and an error message string in case of error.
-
----
-
-###4.7 nml.msg_free(msg_ud)
-Frees the SNmlMessage.pvBuffer memory, and sets SNmlMessage.ui64Size to 0.
-
-Returns true if it freed the message, false if SNmlMessage.pvBuffer is NULL. Returns nil and an error message string in case of error.
-
-#####Implementation
-
-    SNmlMessage* pMessage = luaL_checkudata(L, -1, metatable_name_str);
-    lua_getmetatable(L, 1);
-    lua_getfield(L, -1, "free");
-    lua_pushlightuserdata(L, pMessage->pvBuffer);
-    lua_call(L, 1, 0); // calls nn_freemsg in this example
-
-    // zero out the pointer and its size
-    pMessage->pvBuffer = NULL;
-    pMessage->ui64Size = 0;
+    size_t sizeStr;
+    char* pchString = lua_tolstring(L, 1, &sizeStr);
     
-    // return the ud
-    lua_settop(L, 1);
+    // allocate the buffer that will hold the string
+    lua_pushinteger(L, sizeStr);
+    msg_alloc(L, sizeStr);
+
+    char** ppchBuffer = (char**)lua_touserdata(L, -1);
+
+    // +8 to offset the riff
+    memcpy((*ppchBuffer)+8, pchString, sizeStr);
+
+    // return the userdata buffer
     return 1;
 
 ---
 
-###4.8 nml.msg_setheader(msg_ud, header_str)
-Allocates a header buffer, and puts the specified header string into the message's header buffer. Sets the message's header size to match the lua string size, not adding the terminator.
+###4.2 nml.msg_getsize(buffer_ud)
+Gets the buffer's size by accessing the riff's size identifier.
 
-    SNmlMessage* pMessage = luaL_checkudata(L, -1, metatable_name_str);
-    size_t sizeHeader;
-    void* pvHeader = luaL_checklstring(L, 2, &sizeHeader);
+Returns the size integer if successful, nil and an error message string in case of error.
 
-    // Calls nn_allocmsg, and sets SNmlMessage.pvBuffer.
-    pMessage->pvHeader = nn_allocmsg(sizeHeader);
+---
 
-    memcpy(pMessage->pvHeader, pvHeader, sizeHeader);
-    pMessage->ui64HeaderSize = sizeHeader;
+###4.3 nml.msg_alloc(size)
+Allocates a userdata that will point to the allocated memory.
+The allocated memory will be of the specified size.
+Calls nn_allocmsg to allocate the memory.
 
-    // return the msg_ud
-    lua_settop(L, 1);
+Returns a userdata if successful, or nil and an error message string in case of error.
+
+**Note: the caller needs to return "nml" when asked for the allocator type (getallocatortype).
+
+#####Implementation
+
+    void** ppvBuffer = (void**)lua_newuserdata(L, sizeof(void*));
+    **ppvBuffer = nn_allocmsg(size+8); // the ckid and cksize overhead
     return 1;
 
 ---
 
-###4.9 nml.msg_getheader(msg_ud)
-Returns the message's header as a lua string.
+###4.4 nml.msg_realloc(buffer_ud, size)
+Reallocates a buffer of the specified size.
+Calls nn_reallocmsg with buffer_ud.
 
-    SNmlMessage* pMessage = luaL_checkudata(L, 1);
-
-    if (pMessage->pvHeader!=NULL) {
-      lua_pushlstring(L, pMessage->pvHeader, pMessage->ui64HeaderSize);
-      return 1;
-    }
+Returns a userdata if successful, or nil and an error message string in case of error.
 
 ---
 
-###4.10 nml.send
+###4.5 nml.msg_free(buffer_ud)
+Frees the memory pointed to by buffer_ud, and sets the buffer_ud to nil.
+
+Returns true if it freed the message, false if buffer_ud is NULL. Returns nil and an error message string in case of error.
+
+---
+
+###4.6 nml.msg_setheader(msg_ud, header_str)
+Sets the message userdata riff's header chunk to the specified fourCC code.
+If the header_str is longer than four characters it will be truncated.
+
+---
+
+###4.7 nml.msg_getheader(msg_ud)
+Returns the message's fourCC code as a lua string.
+
+---
+
+###4.8 nml.send
 This is not a message API, but it will need to be modified to support the Message userdata.
 Sends a Message to an SP socket.
 
@@ -305,7 +325,7 @@ The msg_ud's buffer and header memory will be freed and set to NULL by the send.
 
 ---
 
-###4.11 nml.recv
+###4.9 nml.recv
 This is not a message API, but it will need to be modified to support the Message userdata.
 Receives a message coming from an SP socket and pushes it to lua as a string buffer.
 
@@ -323,56 +343,27 @@ error:
 - [1]: nil
 - [2]: (string) a helpful description of the error
 
-#####Implementation
-
-    // in[1]: socket
-    // in[2]: flags
-
-    nn_msghdr hdr;
-    SNmlMessage* pMessage;
-    struct nn_iovec iov;
-    struct nn_msghdr hdr;
-
-    // create a new message
-    nml_msg(L);
-    pMessage = luaL_checkudata(L, -1, message_metatable_str);
-
-    // put it at L[3]
-    lua_insert(L, 3);
-
-    iov.iov_base = pMessage->pvBuffer;
-    iov.iov_len = NN_MSG;
-
-    hdr.msg_iov = &iov;
-    hdr.msg_iovlen = 1;
-
-    hdr.msg_control = pMessage->pvHeader;
-    hdr.msg_controllen = NN_MSG;
-
-    pMessage->ui64BufferSize = nn_recv(socket, &hdr, flags);
-
-    // retrieve the header size
-    pMessage->ui64HeaderSize = nn_chunk_size(pMessage->pvHeader);
-
-    // return the msg_ud
-    lua_pushvalue(L, 3);
-    return 1;
-
 ---
 
-4.12 nml.msg_tostring
+4.10 nml.msg_tostring
 Copies the content of pvBuffer into a lua string.
 
 Always returns a string. If pvBuffer is NULL then it will return an empty string.
 
 ---
 
-4.13 nml.msg_frommessage
+4.11 nml.msg_frommessage
 Clones the specified message into a new message user data.
 
     nml.msg_frommessage(source_msg_ud, dest_msg_ud)
 
     assert(#new_msg_ud==#source_msg_ud)
+
+---
+
+4.12 nml.msg_getbuffer
+Returns the payload section of the buffer userdata's riff.
+Used by C modules to access the raw data without needing to know about its implementation details.
 
 ---
 
@@ -449,7 +440,7 @@ Does not free msg_ud.
 
 #6 generic binary serialization
 This pertains to the issue of non-NML userdata, and to how this kind of userdata can be serialized when nested inside tables. 
-A good example of this is a DSX buffer representing picture data. We need the ability to transfer this userdata over NML, without requiring DSX to publish it using a NML formatting (SNmlMessage).
+A good example of this is a DSX buffer representing picture data. We need the ability to transfer this userdata over NML, without requiring DSX to know anything about how a NML message should be formatted.
 
 We'll implement our own custom payload package:
 
