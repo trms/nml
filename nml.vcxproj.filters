@@ -223,6 +223,9 @@
     <ClCompile Include="src\msg_frommessage.c">
       <Filter>Source Files\api</Filter>
     </ClCompile>
+    <ClCompile Include="src\helpers.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\nanomsg\tests\README">

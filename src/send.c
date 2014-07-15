@@ -22,11 +22,17 @@
 
 #include "nml.h"
 
-// send a message
 // http://nanomsg.org/v0.3/nn_send.3.html
-//
-//	NOTE: this always expects a nml message
-//
+/***
+Sends a nml message over a SP socket.
+NOTE: this always expects a nml message
+@function send
+@param the message userdata
+@return the message userdata
+or
+@return nil
+@return error message
+*/
 int l_send(lua_State* L)
 {
 	int socket;
@@ -38,7 +44,12 @@ int l_send(lua_State* L)
 	struct nn_iovec iov;
 	struct nn_msghdr hdr;
 
-	void** ppck = (void**)luaL_checkudata(L, 2, g_achBufferUdMtName);
+   void** ppck;
+
+   // supplied buffer must be a userdata
+   luaL_checktype(L, -1, LUA_TUSERDATA);
+
+	ppck = (void**)lua_touserdata(L, -1);
 	
 	socket = luaL_checkint(L, P1); // the socket
 	flags = (!lua_isnoneornil (L, P3) ) ?  luaL_checkint(L, P3) : 0; // flags
@@ -56,11 +67,16 @@ int l_send(lua_State* L)
 	if (iov.iov_base!=NULL) {
 		// this will free the pData
 		result = nn_sendmsg (socket, &hdr, flags);
+
+      // remove our reference to the data, it will be free by the send call
+      *ppck = NULL;
+
 		if (result != -1 )
 			lua_pushinteger(L, result);
 		else
 			lua_pushnil(L);
 	} else
 		lua_pushnil(L);
+
 	return 1;	
 }

@@ -2,6 +2,7 @@
 
 /***
 Puts the nml message's data payload in a lua string.
+Supplied userdata buffer must be NML-allocated.
 @function msg_tostring
 @param the nml message user data
 @return the nml message data payload as a lua string

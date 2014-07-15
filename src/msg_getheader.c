@@ -2,6 +2,7 @@
 
 /***
 Returns the nml message's header as a lua string. If the nml message payload is not initialized this will return an empty string.
+Supplied userdata buffer must be NML-allocated.
 @function msg_getheader
 @param the nml message user data
 @return the nml message's header string.

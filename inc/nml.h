@@ -116,6 +116,8 @@ static const int g_inmlApis = sizeof(g_apchApi)/sizeof(g_apchApi[0]);
 
 int dump_stack(lua_State *L, const char * msg);
 
+void populatemessagemt(lua_State* L);
+
 // chunk manipulation
 void* ck_alloc(const int in_i);
 int ck_free(void* in_pv);

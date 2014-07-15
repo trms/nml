@@ -18,10 +18,8 @@ int l_msg_frommessage(lua_State* L)
    DWORD dwHeader = 0;
    const char* pchHeader;
    int iHeaderSize;
-
+   
    // NOTE: I don't know if the message is nml-allocated, so I use the message api here
-   luaL_checkudata(L, 1, g_achBufferUdMtName);
-
    // get the size
    luaL_getmetafield(L, -1, "getsize");
    lua_pushvalue(L, 1);
@@ -50,7 +48,7 @@ int l_msg_frommessage(lua_State* L)
 
    // get the new buffer
    // since I know it's a nml buffer I'll use a shortcut here
-   ppvDest = (void**)luaL_checkudata(L, -1, g_achBufferUdMtName);
+   ppvDest = (void**)lua_touserdata(L, -1);
    
    if ((pvSource!=NULL)&&(*ppvDest!=NULL)&&(iSourceSize>0)) {
       ck_copy_data(*ppvDest, pvSource, iSourceSize);

@@ -41,11 +41,7 @@ int l_recv(lua_State* L)
 	
 	size_t sizeRecv;
 	int flags = luaL_optint(L, P2, 0); // flags
-	void** ppck;
-
-	// create a new nml message
-	//l_nml_msg(L);
-	ppck = (void**)luaL_checkudata(L, -1, g_achBufferUdMtName);
+	void** ppck = (void**)lua_newuserdata(L, sizeof(void*));
 
 	iov.iov_base = ppck;
 	iov.iov_len = NN_MSG;
@@ -62,6 +58,9 @@ int l_recv(lua_State* L)
 		lua_pushstring(L, nn_strerror(nn_errno()));
 		return 2;
 	}
+   // setup the userdata
+   populatemessagemt(L);
+
 	// result
 	return 1;
 }

@@ -2,6 +2,7 @@
 
 /***
 Returns the nml message's data payload address.
+Supplied userdata buffer must be NML-allocated.
 @function msg_getbuffer
 @param the nml message userdata
 @return the nml message's data payload address.

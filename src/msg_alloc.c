@@ -23,26 +23,8 @@ int l_msg_alloc(lua_State* L)
       lua_pushstring(L, nn_strerror(nn_errno()));
       return 2;
    }
-   // populate the ud metatable
-   luaL_newmetatable(L, g_achBufferUdMtName);
-
-   lua_pushstring(L, "__gc");
-   lua_pushcfunction(L, l_msg_free);
-   lua_settable(L, -3);
-
-   lua_pushstring(L, "__len");
-   lua_pushcfunction(L, l_msg_getsize);
-   lua_settable(L, -3);
-
-   lua_pushstring(L, "__tostring");
-   lua_pushcfunction(L, l_msg_tostring);
-   lua_settable(L, -3);
-
-   lua_pushstring(L, "type");
-   lua_pushcfunction(L, l_msg_getheader);
-   lua_settable(L, -3);
-
-   lua_setmetatable(L, -2);
+   // populate the ud metatable - also called by recv
+   populatemessagemt(L);
 
    return 1;
 }

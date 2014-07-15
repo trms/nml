@@ -2,6 +2,7 @@
 
 /***
 Reallocs an existing nml message data payload.
+Supplied userdata buffer must be NML-allocated.
 @function msg_realloc
 @param the nml message user data
 @param size the realloc size

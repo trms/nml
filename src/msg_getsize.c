@@ -2,6 +2,7 @@
 
 /***
 Returns the nml message's data payload size in bytes.
+Supplied userdata buffer must be NML-allocated.
 @function msg_getsize
 @param the nml message user data
 @return the nml message data payload size as an integer

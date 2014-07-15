@@ -4,6 +4,7 @@
 Sets the nml message's header four character code. 
 If the nml message doesn't contain a data payload this will allocate a new payload big enough to hold the ckid and cksize.
 If there's a problem allocating the payload it will return an error message.
+Supplied userdata buffer must be NML-allocated.
 @function msg_setheader
 @param the nml message user data
 @param the nml message's header string.
