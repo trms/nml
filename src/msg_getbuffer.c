@@ -15,6 +15,6 @@ int l_msg_getbuffer(lua_State* L)
 	void** ppck = luaL_checkudata(L, 1, g_achBufferUdMtName);
 
 	// return the payload address as a lud
-	lua_pushlightuserdata(L, ck_get_data(*ppck));
+	lua_pushlightuserdata(L, *ppck);
 	return 1;
 }

@@ -26,7 +26,7 @@
 
 void BuildCFdSet(lua_State* L, int in_iOffset, fd_set* out_pfdset)
 {
-	int j;
+	unsigned int j;
 
 	// build the C fd_set table
 	luaL_checktype(L, in_iOffset, LUA_TTABLE);
@@ -43,7 +43,7 @@ void BuildCFdSet(lua_State* L, int in_iOffset, fd_set* out_pfdset)
 void BuildLuaFdSet(lua_State* L, fd_set* in_pfdset)
 {
 	// build the lua fd_set table
-	int j;
+	unsigned int j;
 	lua_newtable(L);
 	for (j=0; j<in_pfdset->fd_count; j++) {
 		lua_pushnumber(L, j+1);

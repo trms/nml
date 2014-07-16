@@ -19,6 +19,9 @@ int l_msg_fromstring(lua_State* L)
 	const char* pch = luaL_checklstring(L, 1, &sizePayload);
    void** ppvDest;
 
+   // get a new buffer
+   l_nml_msg(L);
+
    // allocate the buffer
    lua_pushinteger(L, sizePayload);
    l_msg_alloc(L); // L:2

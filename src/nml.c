@@ -22,43 +22,6 @@
 
 #include "nml.h"
 
-
-
-int dump_stack (lua_State *L, const char * msg)
-{
-	int i;
-	int top = lua_gettop(L); /*depth of the stack*/
-
-	printf("\n%s:\n--------\n", msg ? msg : "Dumping stack: ");
-	for(i= 1; i <= top; i++) {
-		int t = lua_type(L, i);
-		printf("%d:\t", i);
-		switch(t){
-		case LUA_TSTRING:  /* strings */
-			printf("'%s'", lua_tostring(L,i));
-			break;
-		case LUA_TBOOLEAN:  /*boolean values*/
-			printf(lua_toboolean(L,i) ? "true" : "false");
-			break;
-		case LUA_TNUMBER:  /* numbers */
-			printf("%g", lua_tonumber(L, i));
-			break;
-      case LUA_TUSERDATA:
-         printf("%s - 0x%08X", lua_typename(L,t), lua_touserdata(L, i));
-         break;
-      case LUA_TLIGHTUSERDATA:
-         printf("lightuserdata - 0x%08X", lua_touserdata(L, i));
-         break;
-		default:  /*anything else*/
-			printf("%s", lua_typename(L,t));
-			break;
-		}
-		printf("\n"); /* put in a separator */
-	}
-	printf("--------\n"); /* end of listing separator */
-	return 0;
-}
-
 // single DLL entry point, exposes a lua binding
 extern __declspec(dllexport) int luaopen_nml_core(lua_State* L)
 {

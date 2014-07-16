@@ -91,7 +91,9 @@ nml_api(msg_setheader)
 nml_api(msg_fromstring)
 nml_api(msg_tostring)
 nml_api(msg_getsize)
+nml_api(msg_setsize)
 nml_api(msg_frommessage)
+nml_api(nml_msg)
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -105,9 +107,9 @@ static struct SnmlApi g_apchApi[] = {{g_achsocket, l_socket}, {g_achclose, l_clo
 	{g_achrecv, l_recv}, {g_achpoll, l_poll}, {g_acherrno, l_errno}, {g_achstrerror, l_strerror}, {g_achsymbol, l_symbol}, {g_achsymbolinfo, l_symbolinfo},
 	{g_achdevice, l_device}, {g_achterm, l_term}, {g_achsleep, l_sleep}, {g_achselect, l_select}, 
 	{g_achFD_CLR, l_FD_CLR}, {g_achFD_ISSET, l_FD_ISSET}, {g_achFD_SET, l_FD_SET}, {g_achFD_ZERO, l_FD_ZERO},
-	{g_achmsg_alloc, l_msg_alloc}, {g_achmsg_realloc, l_msg_realloc}, {g_achmsg_free, l_msg_free}, {g_achmsg_getbuffer, l_msg_getbuffer}, 
+	{g_achnml_msg, l_nml_msg}, {g_achmsg_alloc, l_msg_alloc}, {g_achmsg_realloc, l_msg_realloc}, {g_achmsg_free, l_msg_free}, {g_achmsg_getbuffer, l_msg_getbuffer}, 
 	{g_achmsg_getheader, l_msg_getheader}, {g_achmsg_setheader, l_msg_setheader}, {g_achmsg_fromstring, l_msg_fromstring}, {g_achmsg_tostring, l_msg_tostring}, 
-	{g_achmsg_getsize, l_msg_getsize}, {g_achmsg_frommessage, l_msg_frommessage}
+	{g_achmsg_getsize, l_msg_getsize}, {g_achmsg_setsize, l_msg_setsize}, {g_achmsg_frommessage, l_msg_frommessage}
 };
 static const int g_inmlApis = sizeof(g_apchApi)/sizeof(g_apchApi[0]);
 
@@ -119,11 +121,11 @@ int dump_stack(lua_State *L, const char * msg);
 void populatemessagemt(lua_State* L);
 
 // chunk manipulation
-void* ck_alloc(const int in_i);
+void* ck_alloc(const uint32_t in_ui32);
 int ck_free(void* in_pv);
-void* ck_realloc(void* in_pv, const int in_i);
-void* ck_get_data(void* in_pvck);
-void ck_set_header(void* in_pvck, const DWORD in_dw);
-void ck_copy_data(void* io_pvck, const void* in_pvsrc, const size_t in_iSize);
-const char* ck_get_header(void* in_pvck);
-int ck_get_size(void* in_pvck);
+void* ck_realloc(void* in_pv, const uint32_t in_ui32);
+void ck_set_header(void* in_pvck, const uint32_t in_ui32);
+void ck_copy_data(void* io_pvck, const void* in_pvsrc, const uint32_t in_ui32);
+const void* ck_get_header(void* in_pvck);
+uint32_t ck_get_size(void* in_pvck);
+void ck_set_size(void* in_pvck, const uint32_t in_ui32);

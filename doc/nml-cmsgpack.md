@@ -373,11 +373,11 @@ MessagePack will be made into a NuGet that can be imported by NML and any other 
 MessagePack's C core will access the memory allocators through the message's alloc, realloc and free api.
 
 ###5.1 Implementation details
-We need to modify the C module to use the Message's memory allocator callbacks in its pack and unpack methods.
+We need to modify the C module to use the Message's memory allocator callbacks in its pack function. 
+The unpack function will use a regular malloc. In this case the message metatable's __gc will be implemented to call free.
 
-Add a lua_State* parameter to mp_buf_new and mp_cur_new, as well as functions that call free and realloc.
-
-Wrap the memory allocator functions and branch code to the desired allocation mechanism (default malloc/free vs message.alloc/free etc.).    
+Add function pointers for alloc, realloc and free in the mp_buf structure. 
+Whenever a malloc, realloc or free is called on the mp_buf payload, replace with the corresponding mp_buf function.
 
 ###5.2 Notes on MessagePack
 
@@ -396,45 +396,6 @@ Packs the specified table into the msg_ud.
 Pass the Message's userdata to the pack call. At this point the message should be empty. 
 If the message is not empty, then the message's content will be freed using the Message's own free function.
 Access the Message's memory by using the Message's lua metadata functions.
-
-    lua_getmetatable(L, 1);
-    lua_getfield(L, -1, "alloc");
-    lua_pushvalue(L, 1); // the ud
-    lua_pushinteger(L, 1024); // pretend it needs a 1k buffer
-
-    // allocate the buffer
-    lua_call(L, 2, LUA_MULTRET); // the ud and its size
-    
-    // get the pbuf
-    lua_settop(L, 2); // msg_ud, mt
-    lua_getfield(L, 2, "getbuffer");
-    void* pvBuffer = lua_touserdata(L, -1);
-
-    // fill the pbuf
-    memcpy(pvBuffer, ...);
-
-    ...
-
-    // return the Message
-    lua_settop(L, 1);
-    return 1;
-
----
-
-###5.4 MessagePack.unpack(msg_ud)
-Unpacks the msg_ud into a table and returns the table. 
-Does not free msg_ud.
-
-    lua_getmetatable(L, 1);
-    lua_getfield(L, -1, "getbuffer");
-    lua_call(L, 1, LUA_MULTRET);
-
-    void* pvBuffer = lua_touserdata(L, -1);
-
-    // unpack pvBuffer
-
-    // return the table
-    return 1;
 
 ---
 

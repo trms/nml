@@ -14,6 +14,6 @@ int l_msg_tostring(lua_State* L)
 {
 	void** ppck = (void**)luaL_checkudata(L, 1, g_achBufferUdMtName);
 
-	lua_pushlstring(L, ck_get_data(*ppck), ck_get_size(*ppck));
+	lua_pushlstring(L, (char*)*ppck, ck_get_size(*ppck));
 	return 1;
 }

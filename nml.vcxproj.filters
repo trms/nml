@@ -226,6 +226,12 @@
     <ClCompile Include="src\helpers.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\nml_msg.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
+    <ClCompile Include="src\msg_setsize.c">
+      <Filter>Source Files\api</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\nanomsg\tests\README">
@@ -241,9 +247,6 @@
       <Filter>spec\core</Filter>
     </None>
     <None Include="spec\core\core_messages.lua">
-      <Filter>spec\core</Filter>
-    </None>
-    <None Include="spec\core\core_msgpack.lua">
       <Filter>spec\core</Filter>
     </None>
     <None Include="spec\core\core_pair.lua">

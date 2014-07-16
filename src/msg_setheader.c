@@ -24,7 +24,7 @@ int l_msg_setheader(lua_State* L)
 
 	if (*ppck==NULL) {
 		// allocate a new data payload
-		*ppck = ck_alloc(0);
+		*ppck = ck_alloc(4); // make it non-zero
 
 		if (*ppck==NULL) {
 			lua_pushnil(L);

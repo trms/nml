@@ -14,7 +14,7 @@ local nml, msg_str1, msg_str2, msg_str3, msg
 								--true is "message freed", 
 								--false is "no message present", 
 								--nil, err is an error.
-			"msg_alloc",		--allocates memory for a buffer. probably only called in C
+			"msg_alloc",		--allocates memory for a buffer
 			"msg_realloc", 		--dito, but reaollocates...
 ]]
 
@@ -47,7 +47,7 @@ describe("messaging api #msg", function()
 
 	it("can make a new message that is empty.", function()
 		--new empty message
-		msg.buffer = nml.msg_alloc(0)
+		msg.buffer = nml.nml_msg()
 		assert.is_truthy(msg.buffer)
 
 		-- is a userdata
@@ -56,7 +56,7 @@ describe("messaging api #msg", function()
 
 	-- has not been set yet.
 	it("reports an empty header", function()
-		msg.buffer = nml.msg_alloc(0)
+		msg.buffer = nml.nml_msg()
 		assert.is_equal("", nml.msg_getheader(msg.buffer))
 	end)
 
