@@ -25,15 +25,14 @@ static const uint32_t g_iSizeOffset = 4;
 static const uint32_t g_iDataOffset = 8;
 
 // private
-void* ck_get_data(void* in_pvck)
-{
-   return (uint8_t*)in_pvck+g_iDataOffset;
-}
-
-// private
 void* ck_get_raw(void* in_pv)
 {
    return (uint8_t*)in_pv-g_iDataOffset;
+}
+
+void* ck_get_data(void* in_pvck)
+{
+   return (uint8_t*)in_pvck+g_iDataOffset;
 }
 
 void* ck_alloc(const uint32_t in_i)

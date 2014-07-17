@@ -22,6 +22,14 @@
 
 #include "nml.h"
 
+/***
+NML stands for nanomsg library, and is a lua binding for nanomsg.
+@module nml
+@author Tightrope Media Systems
+@copyright 2014
+@license this software is licensed under the MIT license
+*/
+
 // single DLL entry point, exposes a lua binding
 extern __declspec(dllexport) int luaopen_nml_core(lua_State* L)
 {

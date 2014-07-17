@@ -1,17 +1,43 @@
+/*
+    Copyright (c) 2014 Tightrope Media Systems inc.  All rights reserved.
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom
+    the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+    IN THE SOFTWARE.
+*/
+
 #include "nml.h"
 
+/// @module nml
+
 /***
-Puts the supplied lua string in the nml message's data payload, sets the size, and sets the header type to "STR ". 
+message api
+@section message
+*/
+
+/***
+Puts the supplied lua string in the nml message's data payload, sets the size, and sets the header type to "STR ".
 Any existing payload will be freed first.
 An error will be returned in case of a problem while freeing the existing payload.
 An error will be returned in case of a problem while allocating space for the string.
 @function msg_fromstring
-@param the nml message user data
-@param the string to put into the message
-@return the new nml message user data
-or
-@return nil
-@return error message
+@tparam string string the string to put into the message
+@return the nml message userdata, or nil
+@return nil, or a string containing an error message
 */
 int l_msg_fromstring(lua_State* L)
 {

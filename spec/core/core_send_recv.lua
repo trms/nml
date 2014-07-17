@@ -51,7 +51,6 @@ describe("Send tests #sendrecv", function()
 		local err
 		nml.send(pair_1, msg.buffer)
 		msg2_ud, err = nml.recv(pair_2)
-		print(err)
 		assert.is_truthy(msg2_ud)
 	end)
 	
@@ -86,7 +85,7 @@ describe("Send tests #sendrecv", function()
 		assert.are_equal(msg1_str, nml.msg_tostring(msg2_ud))
 	end)
 	
-	it("frees the message, which is still there, even after it was converted.", function() 
+	it("frees the message twice.", function() 
 		nml.send(pair_1, msg.buffer)
 		msg2_ud = nml.recv(pair_2)
 		--returns true when free happens. false if no pointer. nil, msg (or error) if something bad happens.

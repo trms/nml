@@ -22,16 +22,20 @@
 
 #include "nml.h"
 
-// http://nanomsg.org/v0.3/nn_send.3.html
+/// @module nml
+
 /***
 Sends a nml message over a SP socket.
-NOTE: this always expects a nml message
+If the message's payload allocator is 'NML_RIFF', meaning it was allocated through nml's msg_xx api, this will perform a zero-copy send, and nanomsg will free the payload. 
+NML will also reset the userdata payload to NULL.
+If the message's payload wasn't allocated by nml, this will copy the payload into a nml buffer before sending it out. NML will then call the userdata's free function, signaling it consumed the payload.
+See <http://nanomsg.org/v0.3/nn_send.3.html> for more details on the send function.
 @function send
-@param the message userdata
-@return the message userdata
-or
-@return nil
-@return error message
+@tparam integer socket the SP socket identifier
+@param msg_ud the message userdata
+@tparam integer flags the send flags
+@return the message userdata, or nil
+@return nil, or a string containing an error message
 */
 int l_send(lua_State* L)
 {
@@ -47,16 +51,37 @@ int l_send(lua_State* L)
    void** ppck;
 
    // supplied buffer must be a userdata
-   luaL_checktype(L, -1, LUA_TUSERDATA);
+   luaL_checktype(L, P2, LUA_TUSERDATA);
 
-	ppck = (void**)lua_touserdata(L, -1);
-	
+   ppck = (void**)luaL_testudata(L, P2, g_achBufferUdMtName);
+
+   // check the allocator type
+   if (ppck!=NULL) {
+      // it's a NML_RIFF
+      *ppck = ck_get_raw(*ppck);
+      
+      iov.iov_len = NN_MSG;
+   } else {
+      // get the buffer as a lightuserdata, go through lua since we don't know the internal data structure
+      luaL_getmetafield(L, P2, "getbuffer");
+      lua_pushvalue(L, P2);
+      lua_call(L, 2, 1);
+
+      *ppck = lua_touserdata(L, -1);
+      lua_pop(L, 1);
+
+      // get the size
+      luaL_getmetafield(L, P2, "getsize");
+      lua_pushvalue(L, P2);
+      lua_call(L, 1, 1);
+      
+      iov.iov_len = (size_t)lua_tointeger(L, -1);
+      lua_pop(L, 1);
+   }
+   iov.iov_base = ppck;
+
 	socket = luaL_checkint(L, P1); // the socket
 	flags = (!lua_isnoneornil (L, P3) ) ?  luaL_checkint(L, P3) : 0; // flags
-
-	// alloc the message, add the terminator since lua won't
-	iov.iov_base = ppck;
-	iov.iov_len = NN_MSG;
 
 	hdr.msg_iov = &iov;
 	hdr.msg_iovlen = 1;
@@ -68,9 +93,15 @@ int l_send(lua_State* L)
 		// this will free the pData
 		result = nn_sendmsg (socket, &hdr, flags);
 
-      // remove our reference to the data, it will be free by the send call
-      *ppck = NULL;
-
+      // remove our reference to the data, it will be freed by the send call
+      if (ppck!=NULL)
+         *ppck = NULL;
+      else {
+         // free the buffer, to make the send consistent across different allocator types
+         luaL_getmetafield(L, P2, "free");
+         lua_pushvalue(L, P2);
+         lua_call(L, 1, 0);
+      }
 		if (result != -1 )
 			lua_pushinteger(L, result);
 		else

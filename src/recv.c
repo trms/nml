@@ -22,12 +22,19 @@
 
 #include "nml.h"
 
-// recv a message
-// http://nanomsg.org/v0.3/nn_recv.3.html
-//
-//	NOTE: this always expects a STRING message
-// NOTE: this only supports NN_MSG, the caller has to free the buffer through freemsg
-//
+/// @module nml
+
+/***
+Receives a message on the specified SP socket.
+It creates a new nml message, and puts the data received over the socket in the userdata payload.
+The user needs to call nml.msg_free when done with the message or a memory leak will occur.
+see <http://nanomsg.org/v0.3/nn_recv.3.html> for more details on recv.
+@function recv
+@tparam integer socket the SP socket identifier
+@tparam integer flags the desired flags
+@return the new message userdata object, or nil
+@return nil, or a string containing an error message
+*/
 int l_recv(lua_State* L)
 {
 	// receive data using a nn-allocated buffer
@@ -41,7 +48,13 @@ int l_recv(lua_State* L)
 	
 	size_t sizeRecv;
 	int flags = luaL_optint(L, P2, 0); // flags
-	void** ppck = (void**)lua_newuserdata(L, sizeof(void*));
+
+   void** ppck;
+   
+   // allocate a new nml message
+   l_nml_msg(L);
+
+	ppck = (void**)lua_touserdata(L, -1);
 
 	iov.iov_base = ppck;
 	iov.iov_len = NN_MSG;
@@ -58,8 +71,8 @@ int l_recv(lua_State* L)
 		lua_pushstring(L, nn_strerror(nn_errno()));
 		return 2;
 	}
-   // setup the userdata
-   populatemessagemt(L);
+   // adjust the ppck, what we got through the socket was the raw RIFF
+   *ppck = ck_get_data(*ppck);
 
 	// result
 	return 1;

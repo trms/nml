@@ -121,6 +121,8 @@ int dump_stack(lua_State *L, const char * msg);
 void populatemessagemt(lua_State* L);
 
 // chunk manipulation
+void* ck_get_data(void* in_pvck);
+void* ck_get_raw(void* in_pv);
 void* ck_alloc(const uint32_t in_ui32);
 int ck_free(void* in_pv);
 void* ck_realloc(void* in_pv, const uint32_t in_ui32);

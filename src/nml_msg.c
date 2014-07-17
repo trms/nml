@@ -22,10 +22,17 @@
 
 #include "nml.h"
 
+/// @module nml
+
 /***
 Creates a new nml message user data.
-The userdata doesn't contain any data, and is populated later following a nml_alloc call. 
-@return a nml buffer
+The userdata serves as a container that stores the actual payload address. 
+The payload address is initialized to NULL.
+The payload is allocated at the C level and manipulated through nml's msg_xx functions.
+The userdata is assigned a metatable with the name 'NML_RIFF', used by the C code to identify the userdata allocator.
+@function nml_msg
+@return a nml userdata object
+@see nml_message
 */
 int l_nml_msg(lua_State* L)
 {

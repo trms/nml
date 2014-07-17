@@ -60,9 +60,11 @@ describe("messaging api #msg", function()
 		assert.is_equal("", nml.msg_getheader(msg.buffer))
 	end)
 
-	it("can have a string serialized into it.", function()
+	it("can create a new message from scratch using a string source.", function()
+		-- msg_fromstring will call nml_msg internally
 		msg.buffer = nml.msg_fromstring(msg_str1)
 		assert.is_truthy(msg.buffer)
+		assert.are_equal("userdata", type(msg.buffer))
 	end)
 	
 	it("reports the correct message through tostring.", function()
