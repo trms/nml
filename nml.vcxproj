@@ -454,7 +454,7 @@
     <Move SourceFiles="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).pdb" DestinationFolder="$(OutDir)$(ProjectName)\" />
     <Copy SourceFiles="@(LuaTests)" DestinationFolder="$(OutDir)spec\" />
     <Copy SourceFiles="@(ldocs)" DestinationFolder="$(OutDir)" />
-    <Exec Command="$(OutDir)lua.exe $(OutDir)ldoc.lua ."/>
+    <!-- Exec Command="$(OutDir)lua.exe $(OutDir)ldoc.lua ."/-->
   </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
